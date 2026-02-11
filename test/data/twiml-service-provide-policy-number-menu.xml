@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Gather action="/menu/step/provide-policy-number" method="GET">
+        <Say>Please provide the policy number, starting with "MPW".</Say>
+    </Gather>
+    <Say>We didn't receive any input. Goodbye!</Say>
+</Response>

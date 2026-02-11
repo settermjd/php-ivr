@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Gather action="/menu/step/choose-insurance-type" method="GET">
+        <Say>For home and contents insurance, press 1.
+For car insurance, press 2.
+To hear those options again, press *.
+To go back to the previous menu, press 9.</Say>
+    </Gather>
+    <Say>We didn't receive any input. Goodbye!</Say>
+</Response>

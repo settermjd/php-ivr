@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Gather action="/menu/step/get-text-copy-of-conversation" method="GET">
+        <Say>To get a text copy of this conversation, press 1.
+To go back to the previous menu, press 9.</Say>
+    </Gather>
+    <Say>We didn't receive any input. Goodbye!</Say>
+</Response>

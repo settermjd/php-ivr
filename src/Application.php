@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Services\TwiMLService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App as SlimApp;
@@ -29,7 +30,7 @@ final class Application
      */
     public function setupRoutes(): void
     {
-        $this->app->get('/', [$this, 'handleDefaultRoute']);
+        $this->app->get('/menu/step/{step}', [$this, 'getMenu']);
     }
 
     /**
@@ -51,15 +52,20 @@ final class Application
     }
 
     /**
-     * handleDefaultRoute responds to requests to the default route
+     * This function returns TwiML for the menus in the application
      *
-     * Currently, it's effectively a stub, as the project doesn't dictate nor assume
-     * the kind of application that will be built.
+     * @param array<int,string> $args
      */
-    public function handleDefaultRoute(
+    public function getMenu(
         ServerRequestInterface $request,
         ResponseInterface $response,
+        array $args,
     ): ResponseInterface {
+        /** @var TwiMLService $twimlService */
+        $twimlService = $this->app->getContainer()->get(TwiMLService::class);
+        $response->getBody()->write(
+            $twimlService->getMenu($args['step'])->asXML(),
+        );
         return $response;
     }
 }

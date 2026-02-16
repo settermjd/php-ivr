@@ -6,85 +6,55 @@ namespace App\Services;
 
 use Twilio\TwiML\VoiceResponse;
 
+use function array_keys;
+use function file_get_contents;
+use function in_array;
+use function sprintf;
+use function trim;
+
 /**
  * This class simplifies generating the required TwiML
  */
 class TwiMLService
 {
-    public const string MENU_LANGUAGE_OPTIONS = <<<EOF
-Thank you for calling Happy Community Bank and Insurance Company.
-To hear the options in English, press 1.
-To hear the options in Spanish, press 2.
-To hear those options again, press *.
-EOF;
+    public const string BASE_ACTION           = "/menu/step/";
+    public const string NO_INPUT_RESPONSE     = "We didn't receive any input. Goodbye.";
+    public const string INVALID_MENU_RESPONSE = "That is not a valid menu. Goodbye.";
 
-    public const string MENU_TEXT_COPY_OF_CONVERSATION = <<<EOF
-To get a text copy of this conversation, press 1.
-To go back to the previous menu, press 9.
-EOF;
-
-    public const string MENU_CHOOSE_DEPARTMENT = <<<EOF
-For insurance, press 1.
-For banking, press 2.
-To go back to the previous menu, press 9.
-EOF;
-
-    public const string MENU_CHOOSE_INSURANCE_CATEGORY = <<<EOF
-For personal insurance, press 1.
-For commercial insurance, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.
-EOF;
-
-    public const string MENU_CHOOSE_INSURANCE_TYPE = <<<EOF
-For home and contents insurance, press 1.
-For car insurance, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.
-EOF;
-
-    public const string MENU_CHOOSE_NEW_OR_EXISTING_POLICY = <<<EOF
-For a new policy, press 1.
-For an existing policy, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.
-EOF;
-
-    public const string MENU_PROVIDE_PERSONAL_DETAILS = <<<EOF
-Please provide your first and last names.
-EOF;
-
-    public const string MENU_PROVIDE_POLICY_NUMBER = <<<EOF
-Please provide the policy number, starting with "MPW".
-EOF;
-
-    public const string MENU_PRE_TRANSFER = <<<EOF
-Thank you. Transferring you now.
-EOF;
-
-    public const string BASE_ACTION       = "/menu/step/";
-    public const string NO_INPUT_RESPONSE = "We didn't receive any input. Goodbye!";
+    private array $menuOptions = [
+        "choose-department"             => "choose-insurance-category",
+        "choose-insurance-category"     => "choose-insurance-type",
+        "choose-insurance-type"         => "choose-new-or-existing-policy",
+        "choose-language"               => "get-text-copy-of-conversation",
+        "choose-new-or-existing-policy" => "provide-personal-details",
+        "get-text-copy-of-conversation" => "choose-department",
+        "pre-transfer-confirmation"     => null,
+        "provide-personal-details"      => "provide-policy-number",
+        "provide-policy-number"         => "pre-transfer-confirmation",
+    ];
 
     public function __construct(private readonly VoiceResponse $response) {}
 
     public function getMenu(string $menu): VoiceResponse
     {
-        return match ($menu) {
-            "choose-department" => $this->buildMenu(self::MENU_CHOOSE_DEPARTMENT, "choose-department"),
-            "choose-language" => $this->buildMenu(self::MENU_LANGUAGE_OPTIONS, "choose-language"),
-            "get-text-copy-of-conversation" => $this->buildMenu(self::MENU_TEXT_COPY_OF_CONVERSATION, "get-text-copy-of-conversation"),
-            "choose-insurance-category" => $this->buildMenu(self::MENU_CHOOSE_INSURANCE_CATEGORY, "choose-insurance-category"),
-            "choose-insurance-type" => $this->buildMenu(self::MENU_CHOOSE_INSURANCE_TYPE, "choose-insurance-type"),
-            "choose-new-or-existing-policy" => $this->buildMenu(self::MENU_CHOOSE_NEW_OR_EXISTING_POLICY, "choose-new-or-existing-policy"),
-            "provide-personal-details" => $this->buildMenu(self::MENU_PROVIDE_PERSONAL_DETAILS, "provide-personal-details"),
-            "provide-policy-number" => $this->buildMenu(self::MENU_PROVIDE_PERSONAL_DETAILS, "provide-personal-details"),
-            "pre-transfer-confirmation" => $this->buildMenu(self::MENU_PROVIDE_PERSONAL_DETAILS, "provide-personal-details"),
-        };
+        if (! in_array($menu, array_keys($this->menuOptions))) {
+            $this->response->say(self::INVALID_MENU_RESPONSE);
+            return $this->response;
+        }
+
+        return $menu !== "pre-transfer-confirmation"
+            ? $this->buildMenu($menu, $this->menuOptions[$menu])
+            : $this->buildMenu($menu, addNoInputResponse: false);
     }
 
-    private function buildMenu(string $baseMenu, ?string $action = null, bool $addNoInputResponse = true): VoiceResponse
+    private function buildMenu(string $menu, ?string $action = null, bool $addNoInputResponse = true): VoiceResponse
     {
-        // This is only for items with just a base menu.
+        $baseMenu = trim(
+            file_get_contents(
+                sprintf("%s/../../data/%s.txt", __DIR__, $menu),
+            ),
+        );
+
         if ($action === null) {
             $this->response->say($baseMenu);
             return $this->response;

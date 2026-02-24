@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/get-text-copy-of-conversation" method="GET">
+    <Gather action="/menu/step/choose-language/respond" method="GET">
         <Say>Thank you for calling Happy Community Bank and Insurance Company.
 To hear the options in English, press 1.
 To hear the options in Spanish, press 2.

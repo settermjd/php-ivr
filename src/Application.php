@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App;
 
 use App\Services\TwiMLService;
+use Laminas\Filter\Word\DashToCamelCase;
+use Odan\Session\Middleware\SessionStartMiddleware;
+use Odan\Session\SessionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App as SlimApp;
 use Slim\Interfaces\RouteInterface;
 use Slim\Middleware\ContentLengthMiddleware;
+
+use function sprintf;
 
 /**
  * This class encapsulates the central Slim application,
@@ -17,11 +22,14 @@ use Slim\Middleware\ContentLengthMiddleware;
  */
 final class Application
 {
-    public function __construct(private readonly SlimApp $app)
-    {
+    public function __construct(
+        private readonly SlimApp $app,
+        private readonly TwiMLService $twimlService,
+    ) {
         $app->add(new ContentLengthMiddleware());
         $app->addBodyParsingMiddleware();
         $app->addRoutingMiddleware();
+        $app->add(SessionStartMiddleware::class);
         $app->addErrorMiddleware(true, true, true);
     }
 
@@ -30,7 +38,8 @@ final class Application
      */
     public function setupRoutes(): void
     {
-        $this->app->get('/menu/step/{step}', [$this, 'getMenu']);
+        $this->app->post('/menu/step/{step}', [$this, 'getMenu']);
+        $this->app->post('/menu/step/{step}/respond', [$this, 'handleMenu']);
     }
 
     /**
@@ -61,11 +70,30 @@ final class Application
         ResponseInterface $response,
         array $args,
     ): ResponseInterface {
-        /** @var TwiMLService $twimlService */
-        $twimlService = $this->app->getContainer()->get(TwiMLService::class);
-        $response->getBody()->write(
-            $twimlService->getMenu($args['step'])->asXML(),
+        $menu = $this->twimlService->getMenu($args['step']);
+        $response->getBody()->write($menu->asXML());
+        return $response;
+    }
+
+    /**
+     * This function determines the menu to return
+     *
+     * It does this by looking at the requested menu and any digit pressed.
+     *
+     * @param array<string,string> $args
+     */
+    public function handleMenu(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args,
+    ): ResponseInterface {
+        $function = sprintf(
+            "handle%sMenu",
+            new DashToCamelCase()->filter($args['step']),
         );
+        $menu     = $this->twimlService->$function($request->getParsedBody()['Digits']);
+        $response->getBody()->write($menu->asXML());
+
         return $response;
     }
 }

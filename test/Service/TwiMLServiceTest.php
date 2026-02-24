@@ -123,6 +123,58 @@ class TwiMLServiceTest extends TestCase
         }
     }
 
+    #[TestWith(['1'])]
+    #[TestWith(['2'])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    public function testThatHandleChooseLanguageMenuOperatesCorrectly(string $digit): void
+    {
+        switch ($digit) {
+            case '1':
+                $session = $this->createMock(SessionInterface::class);
+                $session
+                    ->expects($this->once())
+                    ->method('set')
+                    ->with('language', 'English');
+
+                $response = new TwiMLService(new VoiceResponse(), $session)
+                                ->handleChooseLanguageMenu($digit);
+
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("get-text-copy-of-conversation"),
+                    $response->asXML(),
+                );
+                break;
+
+            case '2':
+                $session = $this->createMock(SessionInterface::class);
+                $session
+                    ->expects($this->once())
+                    ->method('set')
+                    ->with('language', 'Español');
+
+                $response = new TwiMLService(new VoiceResponse(), $session)
+                                ->handleChooseLanguageMenu($digit);
+
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("thank-you-goodbye"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+                $response = new TwiMLService(
+                    new VoiceResponse(),
+                    $this->createStub(SessionInterface::class),
+                )->handleChooseLanguageMenu($digit);
+
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-language"),
+                    $response->asXML(),
+                );
+                break;
+        }
+    }
+
     private function getExpectedMenu(string $menu): string
     {
         return file_get_contents(

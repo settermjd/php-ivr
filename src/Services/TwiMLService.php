@@ -175,7 +175,19 @@ class TwiMLService
 
     public function handleChooseLanguageMenu(string $digit): VoiceResponse
     {
-        return $this->response;
+        return match ($digit) {
+            '1' => (function (): VoiceResponse {
+                $this->session->set("language", "English");
+                return $this->getMenu(
+                    $this->menuOptions['choose-language']['next'],
+                );
+            })(),
+            '2' => (function (): VoiceResponse {
+                $this->session->set("language", "Español");
+                return $this->getMenu('thank-you-goodbye');
+            })(),
+            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-language'),
+        };
     }
 
     public function handleChooseInsuranceCategoryMenu(string $digit): VoiceResponse

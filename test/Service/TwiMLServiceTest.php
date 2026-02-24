@@ -45,10 +45,9 @@ class TwiMLServiceTest extends TestCase
         );
     }
 
-    /**
-     */
     #[TestWith(['1'])]
     #[TestWith(['2'])]
+    #[TestWith(['8'])]
     #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
     #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
     public function testThatHandleChooseDepartmentMenuOperatesCorrectly(string $digit): void
@@ -82,6 +81,18 @@ class TwiMLServiceTest extends TestCase
 
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("thank-you-goodbye"),
+                    $response->asXML(),
+                );
+                break;
+
+            case '8':
+                $response = new TwiMLService(
+                    new VoiceResponse(),
+                    $this->createStub(SessionInterface::class),
+                )->handleChooseDepartmentMenu($digit);
+
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("talk-to-customer-service-rep-redirection"),
                     $response->asXML(),
                 );
                 break;

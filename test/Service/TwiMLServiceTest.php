@@ -46,18 +46,16 @@ class TwiMLServiceTest extends TestCase
     }
 
     /**
-     * #[TestWith(['2'])]
-     * #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
-     * #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
      */
     #[TestWith(['1'])]
+    #[TestWith(['2'])]
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
     public function testThatHandleChooseDepartmentMenuOperatesCorrectly(string $digit): void
     {
-        $session = $this->createMock(SessionInterface::class);
-
-
         switch ($digit) {
             case '1':
+                $session = $this->createMock(SessionInterface::class);
                 $session
                     ->expects($this->once())
                     ->method('set')
@@ -73,6 +71,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case '2':
+                $session = $this->createMock(SessionInterface::class);
                 $session
                     ->expects($this->once())
                     ->method('set')

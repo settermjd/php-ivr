@@ -3,10 +3,17 @@
 declare(strict_types=1);
 
 use App\Application;
+use App\Services\TwiMLService;
 use DI\Container;
 use Dotenv\Dotenv;
+use Laminas\Session;
+use Odan\Session\PhpSession;
+use Odan\Session\SessionInterface;
+use Odan\Session\SessionManagerInterface;
+use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
 use Twilio\Rest\Client;
+use Twilio\TwiML\VoiceResponse;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -32,6 +39,53 @@ $dotenv->required([
  */
 $container = new Container();
 
+$container->set(
+    Session\SessionManager::class,
+    function (): Session\SessionManager {
+        $config = [
+            'session_manager' => [
+                'config'     => [
+                    'class'   => Session\Config\SessionConfig::class,
+                    'options' => [
+                        'cookie_domain'       => 'localhost',
+                        'cookie_lifetime'     => 3600,
+                        'cookie_path'         => '/',
+                        'name'                => 'test',
+                        'remember_me_seconds' => 3600,
+                        'use_cookies'         => true,
+                    ],
+                ],
+                'storage'    => Session\Storage\SessionArrayStorage::class,
+                'validators' => [
+                    Session\Validator\RemoteAddr::class,
+                    Session\Validator\HttpUserAgent::class,
+                ],
+            ],
+        ];
+
+        $sessionManager = new Session\SessionManager(
+            new Session\Config\SessionConfig()
+                ->setOptions($config['session_manager']['config']['options']),
+        );
+        $sessionManager->setStorage(new Session\Storage\SessionArrayStorage());
+        Session\Container::setDefaultManager($sessionManager);
+        return $sessionManager;
+    },
+);
+
+$config  = [
+    'session' => [
+        'name'          => 'app',
+        'lifetime'      => 7200,
+        'save_path'     => null,
+        'domain'        => null,
+        'secure'        => false,
+        'httponly'      => true,
+        'cache_limiter' => 'nocache',
+    ],
+];
+$session = new PhpSession($config['session']);
+
 /**
  * To simplify interacting with Twilio's APIs, we next register a Twilio REST Client object
  * as a service with the DI container, available in Twilio's PHP Helper Library.
@@ -53,6 +107,6 @@ $app = AppFactory::createFromContainer($container);
  * Finally, initialise a new Application object, initialise the routing table, and boot the
  * application, having it available for handling requests.
  */
-$application = new Application($app);
+$application = new Application($app, new TwiMLService(new VoiceResponse()), $session);
 $application->setupRoutes();
 $application->run();

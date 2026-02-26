@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/provide-policy-number/respond" method="GET">
-        <Say>Please provide the policy number, starting with "MPW".</Say>
-    </Gather>
+    <Say>Please provide the policy number at the tone, starting with "MPW".
+Press the star key when finished.</Say>
+    <Record action="/menu/step/provide-policy-number/respond" 
+        method="post"
+        finishOnKey="*"
+        timeout="10" 
+        transcribe="true"
+        transcribeCallback="/menu/step/provide-policy-number/record" />
     <Say>We didn't receive any input. Goodbye.</Say>
 </Response>

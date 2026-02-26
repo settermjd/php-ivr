@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/provide-personal-details/respond" method="GET">
-        <Say>Please provide your first and last names.</Say>
-    </Gather>
+    <Say>Please provide your first and last names at the tone.
+Press the star key when finished.</Say>
+    <Record action="/menu/step/provide-personal-details/respond" 
+        method="post"
+        finishOnKey="*"
+        timeout="10" 
+        transcribe="true"
+        transcribeCallback="/menu/step/provide-personal-details/record" />
     <Say>We didn't receive any input. Goodbye.</Say>
 </Response>

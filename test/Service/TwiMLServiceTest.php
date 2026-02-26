@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AppTest\Service;
 
 use App\Services\TwiMLService;
-use Odan\Session\SessionInterface;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Twilio\TwiML\VoiceResponse;
@@ -28,9 +27,7 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['provide-policy-number'])]
     public function testCanGenerateMenuCorrectly(string $menu): void
     {
-        $session = $this->createStub(SessionInterface::class);
-
-        $this->twimlService = new TwiMLService(new VoiceResponse(), $session);
+        $this->twimlService = new TwiMLService(new VoiceResponse());
 
         $generatedMenu = $this->twimlService->getMenu($menu);
         $this->assertXmlStringEqualsXmlString(
@@ -54,15 +51,7 @@ class TwiMLServiceTest extends TestCase
     {
         switch ($digit) {
             case '1':
-                $session = $this->createMock(SessionInterface::class);
-                $session
-                    ->expects($this->once())
-                    ->method('set')
-                    ->with('department', 'insurance');
-
-                $response = new TwiMLService(new VoiceResponse(), $session)
-                                ->handleChooseDepartmentMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-insurance-category"),
                     $response->asXML(),
@@ -70,15 +59,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case '2':
-                $session = $this->createMock(SessionInterface::class);
-                $session
-                    ->expects($this->once())
-                    ->method('set')
-                    ->with('department', 'banking');
-
-                $response = new TwiMLService(new VoiceResponse(), $session)
-                                ->handleChooseDepartmentMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("thank-you-goodbye"),
                     $response->asXML(),
@@ -86,11 +67,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case '8':
-                $response = new TwiMLService(
-                    new VoiceResponse(),
-                    $this->createStub(SessionInterface::class),
-                )->handleChooseDepartmentMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("talk-to-customer-service-rep-redirection"),
                     $response->asXML(),
@@ -98,11 +75,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU:
-                $response = new TwiMLService(
-                    new VoiceResponse(),
-                    $this->createStub(SessionInterface::class),
-                )->handleChooseDepartmentMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("get-text-copy-of-conversation"),
                     $response->asXML(),
@@ -110,11 +83,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
-                $response = new TwiMLService(
-                    new VoiceResponse(),
-                    $this->createStub(SessionInterface::class),
-                )->handleChooseDepartmentMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-department"),
                     $response->asXML(),
@@ -130,15 +99,7 @@ class TwiMLServiceTest extends TestCase
     {
         switch ($digit) {
             case '1':
-                $session = $this->createMock(SessionInterface::class);
-                $session
-                    ->expects($this->once())
-                    ->method('set')
-                    ->with('language', 'English');
-
-                $response = new TwiMLService(new VoiceResponse(), $session)
-                                ->handleChooseLanguageMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseLanguageMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("get-text-copy-of-conversation"),
                     $response->asXML(),
@@ -146,15 +107,7 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case '2':
-                $session = $this->createMock(SessionInterface::class);
-                $session
-                    ->expects($this->once())
-                    ->method('set')
-                    ->with('language', 'Español');
-
-                $response = new TwiMLService(new VoiceResponse(), $session)
-                                ->handleChooseLanguageMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseLanguageMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("thank-you-goodbye"),
                     $response->asXML(),
@@ -162,17 +115,211 @@ class TwiMLServiceTest extends TestCase
                 break;
 
             case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
-                $response = new TwiMLService(
-                    new VoiceResponse(),
-                    $this->createStub(SessionInterface::class),
-                )->handleChooseLanguageMenu($digit);
-
+                $response = new TwiMLService(new VoiceResponse())->handleChooseLanguageMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-language"),
                     $response->asXML(),
                 );
                 break;
         }
+    }
+
+    #[TestWith(['1'])]
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    public function testThatHandleTextCopyOfConversationMenuOperatesCorrectly(string $digit): void
+    {
+        switch ($digit) {
+            case '1':
+                $response = new TwiMLService(new VoiceResponse())->handleGetTextCopyOfConversationMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-department"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU:
+                $response = new TwiMLService(new VoiceResponse())->handleGetTextCopyOfConversationMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-language"),
+                    $response->asXML(),
+                );
+                break;
+        }
+    }
+
+    #[TestWith(['1'])]
+    #[TestWith(['2'])]
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    public function testThatHandleChooseInsuranceCategoryMenuOperatesCorrectly(string $digit): void
+    {
+        switch ($digit) {
+            case '1':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceCategoryMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-insurance-type"),
+                    $response->asXML(),
+                );
+                break;
+
+            case '2':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceCategoryMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("thank-you-goodbye"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceCategoryMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-department"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceCategoryMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-insurance-category"),
+                    $response->asXML(),
+                );
+                break;
+        }
+    }
+
+    #[TestWith(['1'])]
+    #[TestWith(['2'])]
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    public function testThatHandleChooseInsuranceTypeMenuOperatesCorrectly(string $digit): void
+    {
+        switch ($digit) {
+            case '1':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceTypeMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("thank-you-goodbye"),
+                    $response->asXML(),
+                );
+                break;
+
+            case '2':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceTypeMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-new-or-existing-policy"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceTypeMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-insurance-category"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceTypeMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-insurance-type"),
+                    $response->asXML(),
+                );
+                break;
+        }
+    }
+
+    #[TestWith(['1'])]
+    #[TestWith(['2'])]
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    public function testThatHandleChooseNewOrExistingPolicyMenuOperatesCorrectly(string $digit): void
+    {
+        switch ($digit) {
+            case '1':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseNewOrExistingPolicyMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("thank-you-goodbye"),
+                    $response->asXML(),
+                );
+                break;
+
+            case '2':
+                $response = new TwiMLService(new VoiceResponse())->handleChooseNewOrExistingPolicyMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("provide-personal-details"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseNewOrExistingPolicyMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-insurance-type"),
+                    $response->asXML(),
+                );
+                break;
+
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+                $response = new TwiMLService(new VoiceResponse())->handleChooseNewOrExistingPolicyMenu($digit);
+                $this->assertXmlStringEqualsXmlString(
+                    $this->getExpectedMenu("choose-new-or-existing-policy"),
+                    $response->asXML(),
+                );
+                break;
+        }
+    }
+
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    public function testCanHandleChooseProvidePersonalDetailsMenu(string $digit): void
+    {
+        $response = new TwiMLService(new VoiceResponse())->handleProvidePersonalDetailsMenu($digit);
+        $this->assertXmlStringEqualsXmlString(
+            $this->getExpectedMenu("choose-new-or-existing-policy"),
+            $response->asXML(),
+        );
+    }
+
+    #[TestWith(['Dave Grohl'])]
+    public function testThatHandleChooseProvidePersonalDetailsMenuCorrectly(string $transcriptionText): void
+    {
+        $response = new TwiMLService(new VoiceResponse())
+            ->handleProvidePersonalDetailsRecordFullNameMenu($transcriptionText);
+        $this->assertXmlStringEqualsXmlString(
+            $this->getExpectedMenu("provide-policy-number"),
+            $response->asXML(),
+        );
+    }
+
+    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    public function testCanHandleChooseProvidePolicyNumberMenuCorrectly(string $digit): void
+    {
+        $response = new TwiMLService(new VoiceResponse())
+            ->handleProvidePolicyNumberMenu($digit);
+        $this->assertXmlStringEqualsXmlString(
+            $this->getExpectedMenu("provide-personal-details"),
+            $response->asXML(),
+        );
+    }
+
+    #[TestWith(['MX1234567890'])]
+    public function testThatHandleChooseProvidePolicyNumberMenuRecordFullNameCorrectly(string $transcriptionText): void
+    {
+        $response = new TwiMLService(new VoiceResponse())
+            ->handleProvidePolicyNumberRecordPolicyNumberMenu($transcriptionText);
+        $this->assertXmlStringEqualsXmlString(
+            $this->getExpectedMenu("pre-transfer-confirmation"),
+            $response->asXML(),
+        );
+    }
+
+    public function testThatHandlePreTransferConfirmationMenuOperatesCorrectly(): void
+    {
+        $response = new TwiMLService(new VoiceResponse())->handlePreTransferConfirmationMenu();
+        $this->assertXmlStringEqualsXmlString(
+            $this->getExpectedMenu("pre-transfer-confirmation"),
+            $response->asXML(),
+        );
     }
 
     private function getExpectedMenu(string $menu): string

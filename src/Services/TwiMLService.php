@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Odan\Session\SessionInterface;
 use Twilio\TwiML\VoiceResponse;
 
 use function array_keys;
@@ -25,6 +24,7 @@ class TwiMLService
     public const string THANK_YOU_GOODBYE_RESPONSE   = "Thank you. Goodbye.";
     public const string NO_INPUT_RESPONSE            = "We didn't receive any input. Goodbye.";
 
+    /** @var array <string,array<string,string>> */
     private array $menuOptions = [
         "choose-department"             => [
             "parent" => "get-text-copy-of-conversation",
@@ -47,7 +47,7 @@ class TwiMLService
             "next"   => "provide-personal-details",
         ],
         "get-text-copy-of-conversation" => [
-            "parent" => "choose-department",
+            "parent" => "choose-language",
             "next"   => "choose-department",
         ],
         "pre-transfer-confirmation"     => [
@@ -64,10 +64,7 @@ class TwiMLService
         ],
     ];
 
-    public function __construct(
-        private VoiceResponse $response,
-        private readonly SessionInterface $session,
-    ) {}
+    public function __construct(private VoiceResponse $response) {}
 
     public function getPreviousMenu(string $menu): VoiceResponse
     {
@@ -117,17 +114,49 @@ class TwiMLService
                 );
                 return $this->response;
             })(),
-            default => $this->buildGatherMenu($menu),
+            "choose-language",
+            "get-text-copy-of-conversation",
+            "choose-department",
+            "choose-insurance-category",
+            "choose-insurance-type",
+            "choose-new-or-existing-policy" => (function () use ($menu) {
+                $this->addGatherVerb($menu);
+                $this->response->say(self::NO_INPUT_RESPONSE);
+                return $this->response;
+            })(),
+            "provide-personal-details",
+            "provide-policy-number" => (function () use ($menu) {
+                $this->response->say(
+                    trim(
+                        file_get_contents(
+                            sprintf("%s/../../data/%s.txt", __DIR__, $menu),
+                        ),
+                    ),
+                );
+                $this->response->record(
+                    [
+                        'action'             => sprintf('%s/%s/respond', self::BASE_ACTION, $menu),
+                        'finishOnKey'        => '*',
+                        'method'             => 'post',
+                        'timeout'            => '10',
+                        'transcribe'         => 'true',
+                        'transcribeCallback' => sprintf('%s/%s/record', self::BASE_ACTION, $menu),
+                    ],
+                );
+                $this->response->say(self::NO_INPUT_RESPONSE);
+
+                return $this->response;
+            })(),
+            // Change this to a default response
+            default => $this->addGatherVerb($menu),
         };
     }
 
     /**
      * This function generates a TwiML menu
      */
-    private function buildGatherMenu(
-        string $menu,
-        bool $addNoInputResponse = true,
-    ): VoiceResponse {
+    private function addGatherVerb(string $menu): void
+    {
         $baseMenu = trim(
             file_get_contents(
                 sprintf("%s/../../data/%s.txt", __DIR__, $menu),
@@ -141,12 +170,6 @@ class TwiMLService
             ],
         );
         $gather->say($baseMenu);
-
-        if ($addNoInputResponse) {
-            $this->response->say(self::NO_INPUT_RESPONSE);
-        }
-
-        return $this->response;
     }
 
     /**
@@ -156,13 +179,11 @@ class TwiMLService
     {
         return match ($digit) {
             '1' => (function (): VoiceResponse {
-                $this->session->set("department", "insurance");
                 return $this->getMenu(
                     $this->menuOptions['choose-department']['next'],
                 );
             })(),
             '2' => (function (): VoiceResponse {
-                $this->session->set("department", "banking");
                 return $this->getMenu('thank-you-goodbye');
             })(),
             '8' => $this->getRedirectToCustomerServiceRepMenu(),
@@ -177,13 +198,11 @@ class TwiMLService
     {
         return match ($digit) {
             '1' => (function (): VoiceResponse {
-                $this->session->set("language", "English");
                 return $this->getMenu(
                     $this->menuOptions['choose-language']['next'],
                 );
             })(),
             '2' => (function (): VoiceResponse {
-                $this->session->set("language", "Español");
                 return $this->getMenu('thank-you-goodbye');
             })(),
             self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-language'),
@@ -192,12 +211,34 @@ class TwiMLService
 
     public function handleChooseInsuranceCategoryMenu(string $digit): VoiceResponse
     {
-        return $this->response;
+        return match ($digit) {
+            '1' => (function (): VoiceResponse {
+                return $this->getMenu(
+                    $this->menuOptions['choose-insurance-category']['next'],
+                );
+            })(),
+            '2' => (function (): VoiceResponse {
+                return $this->getMenu('thank-you-goodbye');
+            })(),
+            self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
+                $this->menuOptions['choose-insurance-category']['parent'],
+            ),
+            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
+        };
     }
 
     public function handleGetTextCopyOfConversationMenu(string $digit): VoiceResponse
     {
-        return $this->response;
+        return match ($digit) {
+            '1' => (function (): VoiceResponse {
+                return $this->getMenu(
+                    $this->menuOptions['get-text-copy-of-conversation']['next'],
+                );
+            })(),
+            self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
+                $this->menuOptions['get-text-copy-of-conversation']['parent'],
+            ),
+        };
     }
 
     /**
@@ -206,12 +247,18 @@ class TwiMLService
     public function handleChooseInsuranceTypeMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            '1' => $this->getMenu('choose-personal-insurance'),
-            '2' => $this->getMenu('choose-commercial-insurance'),
+            '1' => (function (): VoiceResponse {
+                return $this->getMenu('thank-you-goodbye');
+            })(),
+            '2' => (function (): VoiceResponse {
+                return $this->getMenu(
+                    $this->menuOptions['choose-insurance-type']['next'],
+                );
+            })(),
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['choose-insurance-category']['parent'],
+                $this->menuOptions['choose-insurance-type']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
+            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-type'),
         };
     }
 
@@ -236,12 +283,18 @@ class TwiMLService
     public function handleChooseNewOrExistingPolicyMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            '1' => $this->getMenu('choose-personal-insurance'),
-            '2' => $this->getMenu('choose-commercial-insurance'),
+            '1' => (function (): VoiceResponse {
+                return $this->getMenu('thank-you-goodbye');
+            })(),
+            '2' => (function (): VoiceResponse {
+                return $this->getMenu(
+                    $this->menuOptions['choose-new-or-existing-policy']['next'],
+                );
+            })(),
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['choose-insurance-category']['parent'],
+                $this->menuOptions['choose-new-or-existing-policy']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
+            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-new-or-existing-policy'),
         };
     }
 
@@ -251,13 +304,15 @@ class TwiMLService
     public function handleProvidePersonalDetailsMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            '1' => $this->getMenu('choose-personal-insurance'),
-            '2' => $this->getMenu('choose-commercial-insurance'),
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['choose-insurance-category']['parent'],
+                $this->menuOptions['provide-personal-details']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
         };
+    }
+
+    public function handleProvidePersonalDetailsRecordFullNameMenu(string $transcriptionText): VoiceResponse
+    {
+        return $this->getMenu($this->menuOptions['provide-personal-details']['next']);
     }
 
     /**
@@ -266,27 +321,22 @@ class TwiMLService
     public function handleProvidePolicyNumberMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            '1' => $this->getMenu('choose-personal-insurance'),
-            '2' => $this->getMenu('choose-commercial-insurance'),
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['choose-insurance-category']['parent'],
+                $this->menuOptions['provide-policy-number']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
         };
+    }
+
+    public function handleProvidePolicyNumberRecordPolicyNumberMenu(string $transcriptionText): VoiceResponse
+    {
+        return $this->getMenu($this->menuOptions['provide-policy-number']['next']);
     }
 
     /**
      * This function handles the user's choice for the "Pre-Transfer Confirmation" menu
      */
-    public function handlePreTransferConfirmationMenu(string $digit): VoiceResponse
+    public function handlePreTransferConfirmationMenu(): VoiceResponse
     {
-        return match ($digit) {
-            '1' => $this->getMenu('choose-personal-insurance'),
-            '2' => $this->getMenu('choose-commercial-insurance'),
-            self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['choose-insurance-category']['parent'],
-            ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
-        };
+        return $this->getMenu('pre-transfer-confirmation');
     }
 }

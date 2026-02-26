@@ -14,6 +14,7 @@ use Slim\App as SlimApp;
 use Slim\Interfaces\RouteInterface;
 use Slim\Middleware\ContentLengthMiddleware;
 
+use function array_merge;
 use function sprintf;
 
 /**
@@ -25,6 +26,7 @@ final class Application
     public function __construct(
         private readonly SlimApp $app,
         private readonly TwiMLService $twimlService,
+        private readonly SessionInterface $session,
     ) {
         $app->add(new ContentLengthMiddleware());
         $app->addBodyParsingMiddleware();
@@ -39,7 +41,8 @@ final class Application
     public function setupRoutes(): void
     {
         $this->app->post('/menu/step/{step}', [$this, 'getMenu']);
-        $this->app->post('/menu/step/{step}/respond', [$this, 'handleMenu']);
+        $this->app->post('/menu/step/{step}/respond', [$this, 'processCallerInput']);
+        $this->app->post('/menu/step/{step}/record', [$this, 'processCallerVoiceResponse']);
     }
 
     /**
@@ -63,7 +66,7 @@ final class Application
     /**
      * This function returns TwiML for the menus in the application
      *
-     * @param array<int,string> $args
+     * @param array<string,string> $args
      */
     public function getMenu(
         ServerRequestInterface $request,
@@ -82,18 +85,75 @@ final class Application
      *
      * @param array<string,string> $args
      */
-    public function handleMenu(
+    public function processCallerInput(
         ServerRequestInterface $request,
         ResponseInterface $response,
         array $args,
     ): ResponseInterface {
-        $function = sprintf(
-            "handle%sMenu",
-            new DashToCamelCase()->filter($args['step']),
-        );
-        $menu     = $this->twimlService->$function($request->getParsedBody()['Digits']);
+        $postData = $request->getParsedBody();
+        $digits   = $postData['Digits'];
+
+        $callerData = [];
+        $step       = $args['step'];
+        $function   = sprintf("handle%sMenu", new DashToCamelCase()->filter($step));
+        $menu       = $this->twimlService->$function($digits ?? null);
+
         $response->getBody()->write($menu->asXML());
 
+        $callerData = match ($step) {
+            "choose-department" => ["department" => $digits === 1 ? 'insurance' : 'banking'],
+            "choose-insurance-category" => ["insurance-category" => $digits === 1 ? 'personal' : 'commercial'],
+            "choose-insurance-type" => ["insurance-type" => $digits === 1 ? 'home-and-contents' : 'car'],
+            "choose-language" => ["language" => $digits === 1 ? 'English' : 'Español'],
+            "choose-new-or-existing-policy" => ["policy-type" => $digits === 1 ? 'new' : 'existing'],
+            "get-text-copy-of-conversation" => ["text-copy-of-conversation" => $digits === 1 ? true : false],
+            default => [],
+        };
+
+        $this->persistCallerData($postData['From'], $callerData);
+
         return $response;
+    }
+
+    /**
+     * @param array<string,bool|string|mixed> $args
+     */
+    public function processCallerVoiceResponse(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args,
+    ): void {
+        $postData = $request->getParsedBody();
+
+        $key = $args['step'] === 'provide-personal-details'
+            ? 'personal-details'
+            : 'policy-number';
+        $this->persistCallerData(
+            $postData['From'],
+            [
+                $key => $postData['TranscriptionText'],
+            ],
+        );
+    }
+
+    /**
+     * This function handles persisting the user's data in session
+     *
+     * It, basically, pulls any existing data from the current session, merges the new data
+     * into the retrieved data, then persists the updated data back into the session
+     *
+     * @param array<int,string> $callerData
+     */
+    private function persistCallerData(string $callerPhoneNumber, array $callerData): void
+    {
+        if ($callerData === []) {
+            return;
+        }
+
+        $existingCallerData = $this->session->has($callerPhoneNumber)
+            ? $this->session->get($callerPhoneNumber)
+            : [];
+
+        $this->session->set($callerPhoneNumber, array_merge($existingCallerData, $callerData));
     }
 }

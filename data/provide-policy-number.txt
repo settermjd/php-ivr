@@ -1,1 +1,2 @@
-Please provide the policy number, starting with "MPW".
+Please provide the policy number at the tone, starting with "MPW".
+Press the star key when finished.

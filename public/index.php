@@ -6,7 +6,6 @@ use App\Application;
 use App\Services\TwiMLService;
 use DI\Container;
 use Dotenv\Dotenv;
-use Laminas\Session;
 use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
 use Odan\Session\SessionManagerInterface;
@@ -39,43 +38,9 @@ $dotenv->required([
  */
 $container = new Container();
 
-$container->set(
-    Session\SessionManager::class,
-    function (): Session\SessionManager {
-        $config = [
-            'session_manager' => [
-                'config'     => [
-                    'class'   => Session\Config\SessionConfig::class,
-                    'options' => [
-                        'cookie_domain'       => 'localhost',
-                        'cookie_lifetime'     => 3600,
-                        'cookie_path'         => '/',
-                        'name'                => 'test',
-                        'remember_me_seconds' => 3600,
-                        'use_cookies'         => true,
-                    ],
-                ],
-                'storage'    => Session\Storage\SessionArrayStorage::class,
-                'validators' => [
-                    Session\Validator\RemoteAddr::class,
-                    Session\Validator\HttpUserAgent::class,
-                ],
-            ],
-        ];
-
-        $sessionManager = new Session\SessionManager(
-            new Session\Config\SessionConfig()
-                ->setOptions($config['session_manager']['config']['options']),
-        );
-        $sessionManager->setStorage(new Session\Storage\SessionArrayStorage());
-        Session\Container::setDefaultManager($sessionManager);
-        return $sessionManager;
-    },
-);
-
 $config  = [
     'session' => [
-        'name'          => 'app',
+        'name'          => 'twilio-php-ivr-app',
         'lifetime'      => 7200,
         'save_path'     => null,
         'domain'        => null,
@@ -85,6 +50,20 @@ $config  = [
     ],
 ];
 $session = new PhpSession($config['session']);
+
+$container->set(
+    SessionManagerInterface::class,
+    function (ContainerInterface $container) {
+        return $container->get(SessionInterface::class);
+    },
+);
+
+$container->set(
+    SessionInterface::class,
+    function (ContainerInterface $container) use ($config) {
+        return new PhpSession($config['session']);
+    },
+);
 
 /**
  * To simplify interacting with Twilio's APIs, we next register a Twilio REST Client object

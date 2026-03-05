@@ -154,6 +154,9 @@ final class Application
             ? $this->session->get($callerPhoneNumber)
             : [];
 
-        $this->session->set($callerPhoneNumber, array_merge($existingCallerData, $callerData));
+        $this->session->set(
+            $callerPhoneNumber,
+            array_merge($existingCallerData, $callerData),
+        );
     }
 }

@@ -78,6 +78,18 @@ class TwiMLService
     }
 
     /**
+     * This function returns the contents for a TwiML Say verb from the filesystem
+     */
+    public function getSayMenuContent(string $menu): string
+    {
+        return trim(
+            file_get_contents(
+                sprintf("%s/../../data/menus/%s.txt", __DIR__, $menu),
+            ),
+        );
+    }
+
+    /**
      * Returns the relevant TwiML for the requested application menu
      *
      * For example:
@@ -105,13 +117,7 @@ class TwiMLService
 
         return match ($menu) {
             "pre-transfer-confirmation" => (function () use ($menu) {
-                $this->response->say(
-                    trim(
-                        file_get_contents(
-                            sprintf("%s/../../data/%s.txt", __DIR__, $menu),
-                        ),
-                    ),
-                );
+                $this->response->say($this->getSayMenuContent($menu));
                 return $this->response;
             })(),
             "choose-language",
@@ -126,13 +132,7 @@ class TwiMLService
             })(),
             "provide-personal-details",
             "provide-policy-number" => (function () use ($menu) {
-                $this->response->say(
-                    trim(
-                        file_get_contents(
-                            sprintf("%s/../../data/%s.txt", __DIR__, $menu),
-                        ),
-                    ),
-                );
+                $this->response->say($this->getSayMenuContent($menu));
                 $this->response->record(
                     [
                         'action'             => sprintf('%s/%s/respond', self::BASE_ACTION, $menu),
@@ -147,6 +147,7 @@ class TwiMLService
 
                 return $this->response;
             })(),
+
             // Change this to a default response
             default => $this->addGatherVerb($menu),
         };
@@ -157,19 +158,13 @@ class TwiMLService
      */
     private function addGatherVerb(string $menu): void
     {
-        $baseMenu = trim(
-            file_get_contents(
-                sprintf("%s/../../data/%s.txt", __DIR__, $menu),
-            ),
-        );
-
         $gather = $this->response->gather(
             [
                 'action' => sprintf('%s/%s/respond', self::BASE_ACTION, $menu),
                 'method' => 'GET',
             ],
         );
-        $gather->say($baseMenu);
+        $gather->say($this->getSayMenuContent($menu));
     }
 
     /**

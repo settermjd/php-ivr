@@ -90,25 +90,24 @@ final class Application
         ResponseInterface $response,
         array $args,
     ): ResponseInterface {
+        $step     = $args['step'];
         $postData = $request->getParsedBody();
         $digits   = $postData['Digits'];
 
-        $callerData = [];
-        $step       = $args['step'];
-        $function   = sprintf("handle%sMenu", new DashToCamelCase()->filter($step));
-        $menu       = $this->twimlService->$function($digits ?? null);
-
-        $response->getBody()->write($menu->asXML());
-
         $callerData = match ($step) {
-            "choose-department" => ["department" => $digits === 1 ? 'insurance' : 'banking'],
-            "choose-insurance-category" => ["insurance-category" => $digits === 1 ? 'personal' : 'commercial'],
-            "choose-insurance-type" => ["insurance-type" => $digits === 1 ? 'home-and-contents' : 'car'],
-            "choose-language" => ["language" => $digits === 1 ? 'English' : 'Español'],
-            "choose-new-or-existing-policy" => ["policy-type" => $digits === 1 ? 'new' : 'existing'],
-            "get-text-copy-of-conversation" => ["text-copy-of-conversation" => $digits === 1 ? true : false],
+            "choose-department" => ["department" => $digits === "1" ? 'insurance' : 'banking'],
+            "choose-insurance-category" => ["insurance-category" => $digits === "1" ? 'personal' : 'commercial'],
+            "choose-insurance-type" => ["insurance-type" => $digits === "1" ? 'home-and-contents' : 'car'],
+            "choose-language" => ["language" => $digits === "1" ? 'English' : 'Español'],
+            "choose-new-or-existing-policy" => ["policy-type" => $digits === "1" ? 'new' : 'existing'],
+            "get-text-copy-of-conversation" => ["text-copy-of-conversation" => $digits === "1" ? true : false],
             default => [],
         };
+
+        $function = sprintf("handle%sMenu", new DashToCamelCase()->filter($step));
+        $menu     = $this->twimlService->$function($digits ?? null);
+
+        $response->getBody()->write($menu->asXML());
 
         $this->persistCallerData($postData['From'], $callerData);
 
@@ -154,9 +153,6 @@ final class Application
             ? $this->session->get($callerPhoneNumber)
             : [];
 
-        $this->session->set(
-            $callerPhoneNumber,
-            array_merge($existingCallerData, $callerData),
-        );
+        $this->session->set($callerPhoneNumber, array_merge($existingCallerData, $callerData));
     }
 }

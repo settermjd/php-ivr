@@ -29,16 +29,11 @@ class TwiMLServiceTest extends TestCase
     {
         $this->twimlService = new TwiMLService(new VoiceResponse());
 
-        $generatedMenu = $this->twimlService->getMenu($menu);
         $this->assertXmlStringEqualsXmlString(
-            file_get_contents(
-                sprintf(
-                    "%s/../data/menu/%s-menu.xml",
-                    __DIR__,
-                    $menu,
-                ),
-            ),
-            $generatedMenu->asXML(),
+            $this->getExpectedMenu($menu),
+            $this->twimlService
+                ->getMenu($menu)
+                ->asXML(),
         );
     }
 

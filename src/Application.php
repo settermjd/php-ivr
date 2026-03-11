@@ -6,8 +6,8 @@ namespace App;
 
 use App\Services\TwiMLService;
 use Laminas\Filter\Word\DashToCamelCase;
-use Odan\Session\Middleware\SessionStartMiddleware;
-use Odan\Session\SessionInterface;
+use PhpDb\TableGateway\Exception\RuntimeException;
+use PhpDb\TableGateway\TableGatewayInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App as SlimApp;
@@ -26,12 +26,11 @@ final class Application
     public function __construct(
         private readonly SlimApp $app,
         private readonly TwiMLService $twimlService,
-        private readonly SessionInterface $session,
+        private readonly TableGatewayInterface $table,
     ) {
         $app->add(new ContentLengthMiddleware());
         $app->addBodyParsingMiddleware();
         $app->addRoutingMiddleware();
-        $app->add(SessionStartMiddleware::class);
         $app->addErrorMiddleware(true, true, true);
     }
 
@@ -149,10 +148,10 @@ final class Application
             return;
         }
 
-        $existingCallerData = $this->session->has($callerPhoneNumber)
-            ? $this->session->get($callerPhoneNumber)
-            : [];
-
-        $this->session->set($callerPhoneNumber, array_merge($existingCallerData, $callerData));
+        try {
+            $this->table->insert(array_merge($callerData, ['caller_phone_number' => $callerPhoneNumber]));
+        } catch (RuntimeException $e) {
+            $this->table->update($callerData, ['caller_phone_number' => $callerPhoneNumber]);
+        }
     }
 }

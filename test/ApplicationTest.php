@@ -7,7 +7,8 @@ namespace AppTest;
 use App\Application;
 use App\Services\TwiMLService;
 use DI\Container;
-use Odan\Session\SessionInterface;
+use PhpDb\TableGateway\Exception\RuntimeException;
+use PhpDb\TableGateway\TableGatewayInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
@@ -26,11 +27,11 @@ final class ApplicationTest extends TestCase
     #[AllowMockObjectsWithoutExpectations]
     public function testCanInstantiateApplicationObject(): void
     {
-        $session = $this->createStub(SessionInterface::class);
-        $app     = new Application(
+        $table = $this->createStub(TableGatewayInterface::class);
+        $app   = new Application(
             $this->createMock(App::class),
             new TwiMLService(new VoiceResponse()),
-            $session,
+            $table,
         );
         $this->assertInstanceOf(Application::class, $app);
     }
@@ -42,11 +43,11 @@ final class ApplicationTest extends TestCase
         $slimApp
             ->expects($this->exactly(3))
             ->method("post");
-        $session = $this->createStub(SessionInterface::class);
-        $app     = new Application(
+
+        $app = new Application(
             $slimApp,
             new TwiMLService(new VoiceResponse()),
-            $this->createMock(SessionInterface::class),
+            $this->createStub(TableGatewayInterface::class),
         );
         $app->setupRoutes();
     }
@@ -55,51 +56,73 @@ final class ApplicationTest extends TestCase
      * @param array<string,string>|null $postData The post data sent by Twilio to the endpoint
      */
     #[TestWith(['choose-department', ['Digits' => '1', 'From' => '+16175551212']])]
+    #[TestWith(['choose-department', ['Digits' => '1', 'From' => '+16175551212'], true])]
     #[TestWith(['choose-insurance-category', ['Digits' => '1', 'From' => '+16175551212']])]
     #[TestWith(['choose-insurance-type', ['Digits' => '1', 'From' => '+16175551212']])]
     #[TestWith(['choose-language', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['choose-new-or-existing-policy', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['get-text-copy-of-conversation', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['unknown', ['Digits' => '1', 'From' => '+16175551212']])]
-    public function testAppHandlesCallerTouchToneInputCorrectly(string $step, ?array $postData = null): void
-    {
+    #[TestWith(
+        [
+            'choose-new-or-existing-policy',
+            [
+                'Digits' => '1',
+                'From'   => '+16175551212',
+            ],
+        ],
+    )]
+    #[TestWith(
+        [
+            'get-text-copy-of-conversation',
+            [
+                'Digits' => '1',
+                'From'   => '+16175551212',
+            ],
+        ],
+    )]
+    public function testAppHandlesCallerTouchToneInputCorrectly(
+        string $step,
+        ?array $postData = null,
+        bool $recordExists = false,
+    ): void {
         $container = $this->createStub(Container::class);
 
         AppFactory::setContainer($container);
         $slimApp = AppFactory::createFromContainer($container);
 
-        $session = $this->createMock(SessionInterface::class);
-        $session
-            ->expects($this->once())
-            ->method('has')
-            ->with($postData['From'])
-            ->willReturn(true);
-        $session
-            ->expects($this->once())
-            ->method('get')
-            ->with($postData['From'])
-            ->willReturn([]);
-
-        $digits      = $postData['Digits'];
-        $sessionData = match ($step) {
+        $digits     = $postData['Digits'];
+        $callerData = match ($step) {
             'choose-department' => ["department" => $digits === "1" ? 'insurance' : 'banking'],
-            "choose-insurance-category" => ["insurance-category" => $digits === "1" ? 'personal' : 'commercial'],
-            "choose-insurance-type" => ["insurance-type" => $digits === "1" ? 'home-and-contents' : 'car'],
-            "choose-language" => ["language" => $digits === "1" ? 'English' : 'Español'],
-            "choose-new-or-existing-policy" => ["policy-type" => $digits === "1" ? 'new' : 'existing'],
-            "get-text-copy-of-conversation" => ["text-copy-of-conversation" => $digits === "1" ? true : false],
-            "unknown" => [],
+            "choose-insurance-category" => ["insurance_category" => $digits === "1" ? 'personal' : 'commercial'],
+            "choose-insurance-type" => ["insurance_type" => $digits === "1" ? 'home-and-contents' : 'car'],
+            "choose-language" => ["language" => $digits === "1" ? 'english' : 'spanish'],
+            "choose-new-or-existing-policy" => ["new_or_existing_policy_type" => $digits === "1" ? 'new' : 'existing'],
+            "get-text-copy-of-conversation" => ["text_copy_of_conversation" => $digits === "1" ? true : false],
         };
 
-        $session
-            ->expects($this->once())
-            ->method('set')
-            ->with($postData['From'], $sessionData);
+        $callerDetails = ['caller_phone_number' => $postData['From']];
+        $table         = $this->createMock(TableGatewayInterface::class);
+        if ($recordExists) {
+            $table
+                ->expects($this->once())
+                ->method('insert')
+                ->with(array_merge($callerData, $callerDetails))
+                ->willThrowException(new RuntimeException());
+            $table
+                ->expects($this->once())
+                ->method('update')
+                ->with($callerData, $callerDetails)
+                ->willReturn(1);
+        } else {
+            $table
+                ->expects($this->once())
+                ->method('insert')
+                ->with(array_merge($callerData, $callerDetails))
+                ->willReturn(1);
+        }
 
         $app = new Application(
             $slimApp,
             new TwiMLService(new VoiceResponse()),
-            $session,
+            $table,
         );
 
         $request = $this->createMock(ServerRequestInterface::class);
@@ -134,8 +157,11 @@ final class ApplicationTest extends TestCase
             'TranscriptionText'   => 'MPW1234567890',
         ],
     ])]
-    public function testAppHandlesCallerVoiceResponseInputCorrectly(string $step, array $postData): void
-    {
+    public function testAppHandlesCallerVoiceResponseInputCorrectly(
+        string $step,
+        array $postData,
+        bool $recordExists = false,
+    ): void {
         $response = $this->createStub(ResponseInterface::class);
 
         $request = $this->createMock(ServerRequestInterface::class);
@@ -144,32 +170,33 @@ final class ApplicationTest extends TestCase
             ->method('getParsedBody')
             ->willReturn($postData);
 
-        $session = $this->createMock(SessionInterface::class);
-        $session
-            ->expects($this->once())
-            ->method('has')
-            ->with($postData['From'])
-            ->willReturn(true);
-        $session
-            ->expects($this->once())
-            ->method('get')
-            ->with($postData['From'])
-            ->willReturn([]);
-
-        $sessionData = match ($step) {
-            'provide-personal-details' => ['personal-details' => $postData['TranscriptionText']],
-            'provide-policy-number'    => ['policy-number' => $postData['TranscriptionText']],
+        $callerData = match ($step) {
+            'provide-personal-details' => ['personal_details' => $postData['TranscriptionText']],
+            'provide-policy-number'    => ['policy_number' => $postData['TranscriptionText']],
         };
-        $session
-            ->expects($this->once())
-            ->method('set')
-            ->with($postData['From'], $sessionData);
+        $callerDetails = ['caller_phone_number' => $postData['From']];
+        $table         = $this->createMock(TableGatewayInterface::class);
+        if ($recordExists) {
+            $table
+                ->expects($this->once())
+                ->method('insert')
+                ->with(array_merge($callerData, $callerDetails))
+                ->willThrowException(new RuntimeException());
+            $table
+                ->expects($this->once())
+                ->method('update')
+                ->with($callerData, $callerDetails)
+                ->willReturn(1);
+        } else {
+            $table
+                ->expects($this->once())
+                ->method('insert')
+                ->with(array_merge($callerData, $callerDetails))
+                ->willReturn(1);
+        }
 
-        $app = new Application(
-            AppFactory::createFromContainer($this->createStub(Container::class)),
-            new TwiMLService(new VoiceResponse()),
-            $session,
-        );
+        $slimApp = AppFactory::createFromContainer($this->createStub(Container::class));
+        $app     = new Application($slimApp, new TwiMLService(new VoiceResponse()), $table);
 
         $menu = $app->processCallerVoiceResponse($request, $response, ['step' => $step]);
     }

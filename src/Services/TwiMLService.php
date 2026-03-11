@@ -64,7 +64,9 @@ class TwiMLService
         ],
     ];
 
-    public function __construct(private VoiceResponse $response) {}
+    public function __construct(private VoiceResponse $response)
+    {
+    }
 
     public function getPreviousMenu(string $menu): VoiceResponse
     {

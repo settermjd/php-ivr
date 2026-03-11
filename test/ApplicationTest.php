@@ -18,6 +18,8 @@ use Slim\App;
 use Slim\Factory\AppFactory;
 use Twilio\TwiML\VoiceResponse;
 
+use function array_merge;
+
 /**
  * This class encapsulates the central Slim application,
  * making it easier to create and test.

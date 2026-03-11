@@ -13,7 +13,9 @@
         "Twilio"
     ],
     "require": {
+        "laminas/laminas-config-aggregator": "^1.19",
         "laminas/laminas-filter": "^3.4",
+        "laminas/laminas-servicemanager": "^4.5",
         "monolog/monolog": "^3.10",
         "odan/session": "^6.5",
         "php-db/phpdb-sqlite": "^0.1.0",

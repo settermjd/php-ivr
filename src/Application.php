@@ -95,11 +95,11 @@ final class Application
 
         $callerData = match ($step) {
             "choose-department" => ["department" => $digits === "1" ? 'insurance' : 'banking'],
-            "choose-insurance-category" => ["insurance-category" => $digits === "1" ? 'personal' : 'commercial'],
-            "choose-insurance-type" => ["insurance-type" => $digits === "1" ? 'home-and-contents' : 'car'],
-            "choose-language" => ["language" => $digits === "1" ? 'English' : 'Español'],
-            "choose-new-or-existing-policy" => ["policy-type" => $digits === "1" ? 'new' : 'existing'],
-            "get-text-copy-of-conversation" => ["text-copy-of-conversation" => $digits === "1" ? true : false],
+            "choose-insurance-category" => ["insurance_category" => $digits === "1" ? 'personal' : 'commercial'],
+            "choose-insurance-type" => ["insurance_type" => $digits === "1" ? 'home-and-contents' : 'car'],
+            "choose-language" => ["language" => $digits === "1" ? 'english' : 'spanish'],
+            "choose-new-or-existing-policy" => ["new_or_existing_policy_type" => $digits === "1" ? 'new' : 'existing'],
+            "get-text-copy-of-conversation" => ["text_copy_of_conversation" => $digits === "1" ? true : false],
             default => [],
         };
 
@@ -124,8 +124,8 @@ final class Application
         $postData = $request->getParsedBody();
 
         $key = $args['step'] === 'provide-personal-details'
-            ? 'personal-details'
-            : 'policy-number';
+            ? 'personal_details'
+            : 'policy_number';
         $this->persistCallerData(
             $postData['From'],
             [

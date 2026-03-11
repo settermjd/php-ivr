@@ -15,7 +15,7 @@ You'll need the following to use the application:
 
 - A Twilio account (free or paid).
   [Create an account][twilio-referral-url] if you don't already have one.
-- PHP 8.4 or above
+- PHP 8.4 or above with the [PDO][php_pdo_extension] and [PDO SQLite][php_pdo_sqlite_extension] extensions.
 - [Composer][composer] installed globally
 - Git
 - Your preferred code editor or IDE
@@ -31,6 +31,19 @@ cd php-ivr
 composer install
 composer serve
 ```
+
+### Initialise the application's database
+
+Then, you need to initialise the application's database.
+The schema file is stored in _data/database/dump.sql_.
+Feel free to use the database tool that you prefer.
+In the example below, you can see how to initialise the database by using [SQLite's Command Line Shell][sqlite-command-line-shell].
+
+```bash
+sqlite3 data/database/database.sqlite3 < data/database/dump.sql
+```
+
+### Make the application publicly accessible
 
 Now, create a secure tunnel to the internet to the locally running application using ngrok.
 
@@ -82,6 +95,9 @@ No warranty expressed or implied. Software is as is.
 [github-issues]: https://github.com/settermjd/php-ivr/issues
 [github-prs]: https://github.com/settermjd/php-ivr/pulls
 [mit-license]: http://www.opensource.org/licenses/mit-license.html
+[php_pdo_extension]: https://www.php.net/manual/en/pdo.installation.php
+[php_pdo_sqlite_extension]: https://www.php.net/manual/en/ref.pdo-sqlite.php
+[sqlite-command-line-shell]: https://sqlite.org/cli.html
 [twilio-referral-url]: https://twilio.com/try-twilio
 
 <!-- markdownlint-enable MD013 -->

@@ -92,12 +92,12 @@ final class ApplicationTest extends TestCase
 
         $digits     = $postData['Digits'];
         $callerData = match ($step) {
-            'choose-department' => ["department" => $digits === "1" ? 'insurance' : 'banking'],
-            "choose-insurance-category" => ["insurance_category" => $digits === "1" ? 'personal' : 'commercial'],
-            "choose-insurance-type" => ["insurance_type" => $digits === "1" ? 'home-and-contents' : 'car'],
-            "choose-language" => ["language" => $digits === "1" ? 'english' : 'spanish'],
-            "choose-new-or-existing-policy" => ["new_or_existing_policy_type" => $digits === "1" ? 'new' : 'existing'],
-            "get-text-copy-of-conversation" => ["text_copy_of_conversation" => $digits === "1" ? true : false],
+            'choose-department' => ['department' => $digits === '1' ? 'insurance' : 'banking'],
+            'choose-insurance-category' => ['insurance_category' => $digits === '1' ? 'personal' : 'commercial'],
+            'choose-insurance-type' => ['insurance_type' => $digits === '1' ? 'home-and-contents' : 'car'],
+            'choose-language' => ['language' => $digits === '1' ? 'english' : 'spanish'],
+            'choose-new-or-existing-policy' => ['new_or_existing_policy' => $digits === '1' ? 'new' : 'existing'],
+            'get-text-copy-of-conversation' => ['text_copy_of_conversation' => $digits === '1' ? true : false],
         };
 
         $callerDetails = ['caller_phone_number' => $postData['From']];

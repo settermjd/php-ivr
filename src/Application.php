@@ -6,6 +6,7 @@ namespace App;
 
 use App\Services\TwiMLService;
 use Laminas\Filter\Word\DashToCamelCase;
+use PhpDb\Adapter\Exception\InvalidQueryException;
 use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -108,7 +109,7 @@ final class Application
 
         $response->getBody()->write($menu->asXML());
 
-        $this->persistCallerData($postData['From'], $callerData);
+        $this->persistCallerData($postData['CallSid'], $postData['From'], $callerData);
 
         return $response;
     }
@@ -127,6 +128,7 @@ final class Application
             ? 'personal_details'
             : 'policy_number';
         $this->persistCallerData(
+            $postData['CallSid'],
             $postData['From'],
             [
                 $key => $postData['TranscriptionText'],
@@ -142,16 +144,20 @@ final class Application
      *
      * @param array<int,string> $callerData
      */
-    private function persistCallerData(string $callerPhoneNumber, array $callerData): void
+    private function persistCallerData(string $callSid, string $callerPhoneNumber, array $callerData): void
     {
         if ($callerData === []) {
             return;
         }
 
+        $callDetails = [
+            'call_sid'            => $callSid,
+            'caller_phone_number' => $callerPhoneNumber,
+        ];
         try {
-            $this->table->insert(array_merge($callerData, ['caller_phone_number' => $callerPhoneNumber]));
-        } catch (RuntimeException $e) {
-            $this->table->update($callerData, ['caller_phone_number' => $callerPhoneNumber]);
+            $this->table->insert(array_merge($callerData, $callDetails));
+        } catch (RuntimeException|InvalidQueryException $e) {
+            $this->table->update($callerData, $callDetails);
         }
     }
 }

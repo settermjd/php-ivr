@@ -57,17 +57,64 @@ final class ApplicationTest extends TestCase
     /**
      * @param array<string,string>|null $postData The post data sent by Twilio to the endpoint
      */
-    #[TestWith(['choose-department', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['choose-department', ['Digits' => '1', 'From' => '+16175551212'], true])]
-    #[TestWith(['choose-insurance-category', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['choose-insurance-type', ['Digits' => '1', 'From' => '+16175551212']])]
-    #[TestWith(['choose-language', ['Digits' => '1', 'From' => '+16175551212']])]
+    #[TestWith(
+        [
+            'choose-department',
+            [
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
+            ],
+        ]
+    )]
+    #[TestWith(
+        [
+            'choose-department',
+            [
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
+            ],
+            true,
+        ]
+    )]
+    #[TestWith(
+        [
+            'choose-insurance-category',
+            [
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
+            ],
+        ]
+    )]
+    #[TestWith(
+        [
+            'choose-insurance-type',
+            [
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
+            ],
+        ]
+    )]
+    #[TestWith(
+        [
+            'choose-language',
+            [
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
+            ],
+        ]
+    )]
     #[TestWith(
         [
             'choose-new-or-existing-policy',
             [
-                'Digits' => '1',
-                'From'   => '+16175551212',
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
             ],
         ],
     )]
@@ -75,8 +122,9 @@ final class ApplicationTest extends TestCase
         [
             'get-text-copy-of-conversation',
             [
-                'Digits' => '1',
-                'From'   => '+16175551212',
+                'CallSid' => 'CAa0000000000000000000000000000000',
+                'Digits'  => '1',
+                'From'    => '+16175551212',
             ],
         ],
     )]
@@ -100,7 +148,10 @@ final class ApplicationTest extends TestCase
             'get-text-copy-of-conversation' => ['text_copy_of_conversation' => $digits === '1' ? true : false],
         };
 
-        $callerDetails = ['caller_phone_number' => $postData['From']];
+        $callerDetails = [
+            'call_sid'            => $postData['CallSid'],
+            'caller_phone_number' => $postData['From'],
+        ];
         $table         = $this->createMock(TableGatewayInterface::class);
         if ($recordExists) {
             $table
@@ -146,6 +197,7 @@ final class ApplicationTest extends TestCase
     #[TestWith([
         'provide-personal-details',
         [
+            'CallSid'             => 'CAa0000000000000000000000000000000',
             'From'                => '+16175551212',
             'TranscriptionStatus' => 'completed',
             'TranscriptionText'   => 'Dave Grohl',
@@ -154,6 +206,7 @@ final class ApplicationTest extends TestCase
     #[TestWith([
         'provide-policy-number',
         [
+            'CallSid'             => 'CAa0000000000000000000000000000000',
             'From'                => '+16175551212',
             'TranscriptionStatus' => 'completed',
             'TranscriptionText'   => 'MPW1234567890',
@@ -173,8 +226,14 @@ final class ApplicationTest extends TestCase
             ->willReturn($postData);
 
         $callerData = match ($step) {
-            'provide-personal-details' => ['personal_details' => $postData['TranscriptionText']],
-            'provide-policy-number'    => ['policy_number' => $postData['TranscriptionText']],
+            'provide-personal-details' => [
+                'call_sid'         => $postData['CallSid'],
+                'personal_details' => $postData['TranscriptionText'],
+            ],
+            'provide-policy-number'    => [
+                'call_sid'      => $postData['CallSid'],
+                'policy_number' => $postData['TranscriptionText'],
+            ],
         };
         $callerDetails = ['caller_phone_number' => $postData['From']];
         $table         = $this->createMock(TableGatewayInterface::class);

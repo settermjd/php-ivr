@@ -14,6 +14,7 @@ class Menu extends \Tests\Support\ApiTester
 
         $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
         $I->sendPost(sprintf('/menu/step/%s/respond', $requestedMenu), [
+            'CallSid' => 'CAa0000000000000000000000000000000',
             'Digits' => $digit,
             'From'   => "+61123456789",
         ]);

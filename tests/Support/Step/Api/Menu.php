@@ -8,7 +8,7 @@ use function sprintf;
 
 class Menu extends \Tests\Support\ApiTester
 {
-    public function checkMenuInteraction(string $requestedMenu, string $digit, string $menuResponse)
+    public function recordCallerKeypadResponse(string $requestedMenu, string $digit, string $menuResponse)
     {
         $I = $this;
 

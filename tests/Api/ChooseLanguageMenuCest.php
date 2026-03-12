@@ -190,7 +190,7 @@ EOF;
     #[DataProvider('menuProvider')]
     public function testThatRequestsToTheChosenMenuReturnTheCorrectTwiml(Menu $I, Example $example): void
     {
-        $I->checkMenuInteraction($example['menu'], $example['digit'], $example['response']);
+        $I->recordCallerKeypadResponse($example['menu'], $example['digit'], $example['response']);
     }
 
     protected function menuProvider(): array

@@ -121,7 +121,7 @@ final class Application
         ServerRequestInterface $request,
         ResponseInterface $response,
         array $args,
-    ): void {
+    ): ResponseInterface {
         $postData = $request->getParsedBody();
 
         $key = $args['step'] === 'provide-personal-details'
@@ -134,6 +134,8 @@ final class Application
                 $key => $postData['TranscriptionText'],
             ],
         );
+
+        return $response;
     }
 
     /**

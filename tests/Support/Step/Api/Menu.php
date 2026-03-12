@@ -15,12 +15,26 @@ class Menu extends \Tests\Support\ApiTester
         $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
         $I->sendPost(sprintf('/menu/step/%s/respond', $requestedMenu), [
             'CallSid' => 'CAa0000000000000000000000000000000',
-            'Digits' => $digit,
-            'From'   => "+61123456789",
+            'Digits'  => $digit,
+            'From'    => "+61123456789",
         ]);
 
         $I->seeResponseCodeIsSuccessful();
         $I->seeResponseIsXml();
         $I->seeResponseContains($menuResponse);
+    }
+
+    public function recordCallerVoiceResponse(string $requestedMenu, string $transcriptionText)
+    {
+        $I = $this;
+
+        $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
+        $I->sendPost(sprintf('/menu/step/%s/record', $requestedMenu), [
+            'CallSid'           => 'CAa0000000000000000000000000000000',
+            'TranscriptionText' => $transcriptionText,
+            'From'              => "+61123456789",
+        ]);
+
+        $I->seeResponseCodeIsSuccessful();
     }
 }

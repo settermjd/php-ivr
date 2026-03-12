@@ -14,79 +14,79 @@ use Tests\Support\Step\Api\Menu;
 final class ChooseLanguageMenuCest
 {
     public const string MENU_GET_TEXT_COPY_OF_CONVERSATION = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/get-text-copy-of-conversation/respond" method="GET"><Say>To get a text copy of this conversation, press 1.
-To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Gather action="/menu/step/get-text-copy-of-conversation/respond" method="GET"><Say>To get a text copy of this conversation, press 1.
+        To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_CHOOSE_DEPARTMENT = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/choose-department/respond" method="GET"><Say>For insurance, press 1.
-For banking, press 2.
-To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Gather action="/menu/step/choose-department/respond" method="GET"><Say>For insurance, press 1.
+        For banking, press 2.
+        To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
 
     public const string MENU_CHOOSE_INSURANCE_CATEGORY = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/choose-insurance-category/respond" method="GET"><Say>For personal insurance, press 1.
-For commercial insurance, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Gather action="/menu/step/choose-insurance-category/respond" method="GET"><Say>For personal insurance, press 1.
+        For commercial insurance, press 2.
+        To hear those options again, press *.
+        To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_CHOOSE_INSURANCE_TYPE = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/choose-insurance-type/respond" method="GET"><Say>For home and contents insurance, press 1.
-For car insurance, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Gather action="/menu/step/choose-insurance-type/respond" method="GET"><Say>For home and contents insurance, press 1.
+        For car insurance, press 2.
+        To hear those options again, press *.
+        To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_CHOOSE_NEW_OR_EXISTING_POLICY = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/choose-new-or-existing-policy/respond" method="GET"><Say>For a new policy, press 1.
-For an existing policy, press 2.
-To hear those options again, press *.
-To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Gather action="/menu/step/choose-new-or-existing-policy/respond" method="GET"><Say>For a new policy, press 1.
+        For an existing policy, press 2.
+        To hear those options again, press *.
+        To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_PROVIDE_PERSONAL_DETAILS = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>Please provide your first and last names at the tone.
-Press the star key when finished.</Say><Record action="/menu/step/provide-personal-details/respond" finishOnKey="*" method="post" timeout="10" transcribe="true" transcribeCallback="/menu/step/provide-personal-details/record"/><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Say>Please provide your first and last names at the tone.
+        Press the star key when finished.</Say><Record action="/menu/step/provide-personal-details/respond" finishOnKey="*" method="post" timeout="10" transcribe="true" transcribeCallback="/menu/step/provide-personal-details/record"/><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_PROVIDE_POLICY_NUMBER = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>Please provide the policy number at the tone, starting with "MPW".
-Press the star key when finished.</Say><Record action="/menu/step/provide-policy-number/respond" finishOnKey="*" method="post" timeout="10" transcribe="true" transcribeCallback="/menu/step/provide-policy-number/record"/><Say>We didn't receive any input. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Say>Please provide the policy number at the tone, starting with "MPW".
+        Press the star key when finished.</Say><Record action="/menu/step/provide-policy-number/respond" finishOnKey="*" method="post" timeout="10" transcribe="true" transcribeCallback="/menu/step/provide-policy-number/record"/><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_PRE_TRANSFER = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>Thank you. Transferring you now.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Say>Thank you. Transferring you now.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_THANK_YOU_GOODBYE = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>Thank you. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Say>Thank you. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public const string MENU_TRANSFER_TO_CUSTOMER_SERVICE_REP = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>Transferring you now. Goodbye.</Say></Response>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Response><Say>Transferring you now. Goodbye.</Say></Response>
 
-EOF;
+        EOF;
 
     public function testThatRequestsForTheChooseLanguageMenuReturnTheCorrectTwiml(ApiTester $I): void
     {
@@ -94,13 +94,13 @@ EOF;
         $I->sendPost('/menu/step/choose-language', []);
 
         $expectedResult = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Response><Gather action="/menu/step/choose-language/respond" method="GET"><Say>Thank you for calling Happy Community Bank and Insurance Company.
-To hear the options in English, press 1.
-To hear the options in Spanish, press 2.
-To hear those options again, press *.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Response><Gather action="/menu/step/choose-language/respond" method="GET"><Say>Thank you for calling Happy Community Bank and Insurance Company.
+            To hear the options in English, press 1.
+            To hear the options in Spanish, press 2.
+            To hear those options again, press *.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
-EOF;
+            EOF;
 
         $I->seeResponseCodeIsSuccessful();
         $I->seeResponseIsXml();
@@ -290,6 +290,26 @@ EOF;
                 'menu'     => 'choose-department',
                 'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS,
                 'response' => self::MENU_CHOOSE_DEPARTMENT,
+            ],
+        ];
+    }
+
+    #[DataProvider('transcriptionTextProvider')]
+    public function testThatRequestsWithTheCallersVoiceResponseAreRecordedCorrectly(Menu $I, Example $example): void
+    {
+        $I->recordCallerVoiceResponse($example['menu'], $example['transcriptionText']);
+    }
+
+    protected function transcriptionTextProvider(): array
+    {
+        return [
+            [
+                'menu'              => 'provide-personal-details',
+                'transcriptionText' => "Paul McCartney",
+            ],
+            [
+                'menu'              => 'provide-policy-number',
+                'transcriptionText' => "TWL123456789",
             ],
         ];
     }

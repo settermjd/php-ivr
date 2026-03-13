@@ -6,7 +6,9 @@ namespace AppTest;
 
 use App\Application;
 use App\Services\TwiMLService;
+use ArrayObject;
 use DI\Container;
+use PhpDb\ResultSet\ResultSet;
 use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -16,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
+use Slim\Views\Twig;
 use Twilio\TwiML\VoiceResponse;
 
 use function array_merge;
@@ -260,5 +263,45 @@ final class ApplicationTest extends TestCase
         $app     = new Application($slimApp, new TwiMLService(new VoiceResponse()), $table);
 
         $menu = $app->processCallerVoiceResponse($request, $response, ['step' => $step]);
+    }
+
+    public function testThatAgentDashboardRendersAsExpected(): void
+    {
+        $callSid = 'CAa0000000000000000000000000000000';
+
+        $result = $this->createMock(ResultSet::class);
+        $result
+            ->expects($this->once())
+            ->method('current')
+            ->willReturn(new ArrayObject());
+        $table = $this->createMock(TableGatewayInterface::class);
+        $table
+            ->expects($this->once())
+            ->method('select')
+            ->with(['call_sid' => $callSid])
+            ->willReturn($result);
+
+        $slimApp  = AppFactory::createFromContainer($this->createStub(Container::class));
+        $app      = new Application($slimApp, new TwiMLService(new VoiceResponse()), $table);
+        $response = $this->createStub(ResponseInterface::class);
+
+        $twig = $this->createMock(Twig::class);
+        $twig
+            ->expects($this->once())
+            ->method('render')
+            ->with(
+                $response,
+                'dashboard.html.twig',
+                []
+            );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request
+            ->expects($this->once())
+            ->method('getAttribute')
+            ->with('view')
+            ->willReturn($twig);
+
+        $app->getAgentDashboard($request, $response, ['callSid' => $callSid]);
     }
 }

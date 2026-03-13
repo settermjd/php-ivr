@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/styles.css" rel="stylesheet">
+    <title>Agent Dashboard</title>
+</head>
+<body class="md:mx-auto md:max-w-4xl">
+    <h1 class="text-2xl md:text-5xl">Call Details</h1>
+
+    <table>
+    <thead>
+        <tr>
+            <th class="">Item</th>
+            <th class="">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Call SID:</td>
+            <td class="overflow-x-auto">{{ call_sid }}</td>
+        </tr>
+        <tr>
+            <td>Caller's Phone Number:</td>
+            <td>{{ caller_phone_number }}</td>
+        </tr>
+        <tr>
+            <td>Chosen Language:</td>
+            <td>{{ language|capitalize }}</td>
+        </tr>
+        <tr>
+            <td>Chosen Department:</td>
+            <td>{{ department|capitalize }}</td>
+        </tr>
+        <tr>
+            <td>Chosen Insurance Category:</td>
+            <td>{{ insurance_category|capitalize }}</td>
+        </tr>
+        <tr>
+            <td>Chosen Insurance Type:</td>
+            <td>{{ insurance_type|capitalize }}</td>
+        </tr>
+        <tr>
+            <td>New or Existing Policy:</td>
+            <td>{{ new_or_existing_policy|capitalize }}</td>
+        </tr>
+        <tr>
+            <td>Requires a text copy of the conversation?</td>
+            <td>{% if text_copy_of_conversation is same as (0) %}No{% else %}Yes{% endif %}</td>
+        </tr>
+        <tr>
+            <td>Personal Details:</td>
+            <td>{{ personal_details }}</td>
+        </tr>
+        <tr>
+            <td>Policy Number:</td>
+            <td>{{ policy_number }}</td>
+        </tr>
+    </tbody>
+    </table>
+</body>
+</html>

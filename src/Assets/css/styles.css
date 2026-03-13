@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer base {
+    body {
+        @apply p-2 md:my-16;
+    }
+    table {
+        @apply table table-auto w-full border-collapse border border-gray-400 my-3 md:my-10; 
+    }
+    th, td {
+        @apply p-2 md:p-4 w-1/2 text-left border border-gray-300;
+    }
+    th {
+        @apply bg-gray-50;
+    }
+}

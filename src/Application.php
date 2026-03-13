@@ -7,6 +7,8 @@ namespace App;
 use App\Services\TwiMLService;
 use Laminas\Filter\Word\DashToCamelCase;
 use PhpDb\Adapter\Exception\InvalidQueryException;
+use PhpDb\ResultSet\ResultSet;
+use PhpDb\ResultSet\ResultSetInterface;
 use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -48,6 +50,7 @@ final class Application
         $this->app->post('/menu/step/{step}', [$this, 'getMenu']);
         $this->app->post('/menu/step/{step}/respond', [$this, 'processCallerInput']);
         $this->app->post('/menu/step/{step}/record', [$this, 'processCallerVoiceResponse']);
+        $this->app->get('/caller-input/{callSid}', [$this, 'getAgentDashboard']);
     }
 
     /**
@@ -81,6 +84,21 @@ final class Application
         $menu = $this->twimlService->getMenu($args['step']);
         $response->getBody()->write($menu->asXML());
         return $response;
+    }
+
+    public function getAgentDashboard(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args,
+    ): ResponseInterface {
+        $view    = Twig::fromRequest($request);
+        $callSid = $args['callSid'];
+
+        /** @var ResultSetInterface&ResulSet $result */
+        $result = $this->table->select(['call_sid' => $callSid]);
+
+        $callDetails = $result->current();
+        return $view->render($response, 'dashboard.html.twig', $callDetails->getArrayCopy());
     }
 
     /**

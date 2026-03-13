@@ -14,6 +14,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\App as SlimApp;
 use Slim\Interfaces\RouteInterface;
 use Slim\Middleware\ContentLengthMiddleware;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
 
 use function array_merge;
 use function sprintf;
@@ -33,6 +35,9 @@ final class Application
         $app->addBodyParsingMiddleware();
         $app->addRoutingMiddleware();
         $app->addErrorMiddleware(true, true, true);
+
+        $twig = Twig::create(__DIR__ . '/../data/templates', ['cache' => false]);
+        $app->add(TwigMiddleware::create($app, $twig));
     }
 
     /**

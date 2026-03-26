@@ -7,7 +7,6 @@ namespace App;
 use App\Services\TwiMLService;
 use Laminas\Filter\Word\DashToCamelCase;
 use PhpDb\Adapter\Exception\InvalidQueryException;
-use PhpDb\ResultSet\ResultSet;
 use PhpDb\ResultSet\ResultSetInterface;
 use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
@@ -150,6 +149,7 @@ final class Application
         $key = $args['step'] === 'provide-personal-details'
             ? 'personal_details'
             : 'policy_number';
+
         $this->persistCallerData(
             $postData['CallSid'],
             $postData['From'],
@@ -181,7 +181,7 @@ final class Application
         ];
         try {
             $this->table->insert(array_merge($callerData, $callDetails));
-        } catch (RuntimeException|InvalidQueryException $e) {
+        } catch (RuntimeException | InvalidQueryException $e) {
             $this->table->update($callerData, $callDetails);
         }
     }

@@ -270,7 +270,7 @@ class TwiMLServiceTest extends TestCase
     {
         $response = new TwiMLService(new VoiceResponse())->handleProvidePersonalDetailsMenu($digit);
         $this->assertXmlStringEqualsXmlString(
-            $this->getExpectedMenu("choose-new-or-existing-policy"),
+            $this->getExpectedMenu("provide-policy-number"),
             $response->asXML(),
         );
     }
@@ -292,7 +292,7 @@ class TwiMLServiceTest extends TestCase
         $response = new TwiMLService(new VoiceResponse())
             ->handleProvidePolicyNumberMenu($digit);
         $this->assertXmlStringEqualsXmlString(
-            $this->getExpectedMenu("provide-personal-details"),
+            $this->getExpectedMenu("pre-transfer-confirmation"),
             $response->asXML(),
         );
     }

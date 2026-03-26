@@ -1,4 +1,4 @@
 For personal insurance, press 1.
 For commercial insurance, press 2.
-To hear those options again, press *.
+To hear those options again, press star.
 To go back to the previous menu, press 9.

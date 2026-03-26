@@ -62,8 +62,6 @@ $dependencies['services']['config'] = $config;
 
 $diContainer = new ServiceManager($dependencies);
 
-$adapter = new AdapterFactory()->__invoke($diContainer);
-
 /**
  * With the DI container initialised, it's now set as the Slim application's DI container,
  * before initialising a new Slim App object.
@@ -78,7 +76,7 @@ $app = AppFactory::createFromContainer($diContainer);
 $application = new Application(
     $app,
     new TwiMLService(new VoiceResponse()),
-    new TableGateway('ivr_input', $adapter),
+    new TableGateway('ivr_input', new AdapterFactory()->__invoke($diContainer)),
 );
 $application->setupRoutes();
 $application->run();

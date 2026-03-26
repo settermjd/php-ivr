@@ -291,6 +291,16 @@ final class ChooseLanguageMenuCest
                 'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
                 'response' => self::MENU_CHOOSE_DEPARTMENT,
             ],
+            [
+                'menu'     => 'provide-personal-details',
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
+                'response' => self::MENU_PROVIDE_POLICY_NUMBER,
+            ],
+            [
+                'menu'     => 'provide-policy-number',
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
+                'response' => self::MENU_PRE_TRANSFER,
+            ],
         ];
     }
 

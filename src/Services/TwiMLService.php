@@ -19,7 +19,7 @@ class TwiMLService
 {
     public const string BASE_ACTION                  = "/menu/step";
     public const string DIGIT_GO_TO_PREVIOUS_MENU    = '9';
-    public const string DIGIT_REPEAT_CURRENT_OPTIONS = '*';
+    public const string DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS = '*';
     public const string INVALID_MENU_RESPONSE        = "That is not a valid menu. Goodbye.";
     public const string THANK_YOU_GOODBYE_RESPONSE   = "Thank you. Goodbye.";
     public const string NO_INPUT_RESPONSE            = "We didn't receive any input. Goodbye.";
@@ -187,7 +187,7 @@ class TwiMLService
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
                 $this->menuOptions['choose-department']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-department'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-department'),
         };
     }
 
@@ -202,7 +202,7 @@ class TwiMLService
             '2' => (function (): VoiceResponse {
                 return $this->getMenu('thank-you-goodbye');
             })(),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-language'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-language'),
         };
     }
 
@@ -220,7 +220,7 @@ class TwiMLService
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
                 $this->menuOptions['choose-insurance-category']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-insurance-category'),
         };
     }
 
@@ -255,7 +255,7 @@ class TwiMLService
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
                 $this->menuOptions['choose-insurance-type']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-type'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-insurance-type'),
         };
     }
 
@@ -270,7 +270,7 @@ class TwiMLService
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
                 $this->menuOptions['choose-insurance-category']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-insurance-category'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-insurance-category'),
         };
     }
 
@@ -291,7 +291,7 @@ class TwiMLService
             self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
                 $this->menuOptions['choose-new-or-existing-policy']['parent'],
             ),
-            self::DIGIT_REPEAT_CURRENT_OPTIONS => $this->getMenu('choose-new-or-existing-policy'),
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu('choose-new-or-existing-policy'),
         };
     }
 
@@ -301,8 +301,8 @@ class TwiMLService
     public function handleProvidePersonalDetailsMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['provide-personal-details']['parent'],
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu(
+                $this->menuOptions['provide-personal-details']['next'],
             ),
         };
     }
@@ -318,8 +318,8 @@ class TwiMLService
     public function handleProvidePolicyNumberMenu(string $digit): VoiceResponse
     {
         return match ($digit) {
-            self::DIGIT_GO_TO_PREVIOUS_MENU => $this->getMenu(
-                $this->menuOptions['provide-policy-number']['parent'],
+            self::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS => $this->getMenu(
+                $this->menuOptions['provide-policy-number']['next'],
             ),
         };
     }

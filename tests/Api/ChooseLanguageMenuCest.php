@@ -218,7 +218,7 @@ final class ChooseLanguageMenuCest
             ],
             [
                 'menu'     => 'choose-insurance-category',
-                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS,
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
                 'response' => self::MENU_CHOOSE_INSURANCE_CATEGORY,
             ],
             [
@@ -238,7 +238,7 @@ final class ChooseLanguageMenuCest
             ],
             [
                 'menu'     => 'choose-insurance-type',
-                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS,
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
                 'response' => self::MENU_CHOOSE_INSURANCE_TYPE,
             ],
             [
@@ -258,7 +258,7 @@ final class ChooseLanguageMenuCest
             ],
             [
                 'menu'     => 'choose-new-or-existing-policy',
-                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS,
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
                 'response' => self::MENU_CHOOSE_NEW_OR_EXISTING_POLICY,
             ],
             [
@@ -288,7 +288,7 @@ final class ChooseLanguageMenuCest
             ],
             [
                 'menu'     => 'choose-department',
-                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS,
+                'digit'    => TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS,
                 'response' => self::MENU_CHOOSE_DEPARTMENT,
             ],
         ];

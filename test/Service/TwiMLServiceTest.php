@@ -41,7 +41,7 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['2'])]
     #[TestWith(['8'])]
     #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
-    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testThatHandleChooseDepartmentMenuOperatesCorrectly(string $digit): void
     {
         switch ($digit) {
@@ -77,7 +77,7 @@ class TwiMLServiceTest extends TestCase
                 );
                 break;
 
-            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS:
                 $response = new TwiMLService(new VoiceResponse())->handleChooseDepartmentMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-department"),
@@ -89,7 +89,7 @@ class TwiMLServiceTest extends TestCase
 
     #[TestWith(['1'])]
     #[TestWith(['2'])]
-    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testThatHandleChooseLanguageMenuOperatesCorrectly(string $digit): void
     {
         switch ($digit) {
@@ -109,7 +109,7 @@ class TwiMLServiceTest extends TestCase
                 );
                 break;
 
-            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS:
                 $response = new TwiMLService(new VoiceResponse())->handleChooseLanguageMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-language"),
@@ -145,7 +145,7 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['1'])]
     #[TestWith(['2'])]
     #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
-    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testThatHandleChooseInsuranceCategoryMenuOperatesCorrectly(string $digit): void
     {
         switch ($digit) {
@@ -173,7 +173,7 @@ class TwiMLServiceTest extends TestCase
                 );
                 break;
 
-            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS:
                 $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceCategoryMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-insurance-category"),
@@ -186,7 +186,7 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['1'])]
     #[TestWith(['2'])]
     #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
-    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testThatHandleChooseInsuranceTypeMenuOperatesCorrectly(string $digit): void
     {
         switch ($digit) {
@@ -214,7 +214,7 @@ class TwiMLServiceTest extends TestCase
                 );
                 break;
 
-            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS:
                 $response = new TwiMLService(new VoiceResponse())->handleChooseInsuranceTypeMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-insurance-type"),
@@ -227,7 +227,7 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['1'])]
     #[TestWith(['2'])]
     #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
-    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testThatHandleChooseNewOrExistingPolicyMenuOperatesCorrectly(string $digit): void
     {
         switch ($digit) {
@@ -255,7 +255,7 @@ class TwiMLServiceTest extends TestCase
                 );
                 break;
 
-            case TwiMLService::DIGIT_REPEAT_CURRENT_OPTIONS:
+            case TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS:
                 $response = new TwiMLService(new VoiceResponse())->handleChooseNewOrExistingPolicyMenu($digit);
                 $this->assertXmlStringEqualsXmlString(
                     $this->getExpectedMenu("choose-new-or-existing-policy"),
@@ -265,7 +265,7 @@ class TwiMLServiceTest extends TestCase
         }
     }
 
-    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testCanHandleChooseProvidePersonalDetailsMenu(string $digit): void
     {
         $response = new TwiMLService(new VoiceResponse())->handleProvidePersonalDetailsMenu($digit);
@@ -286,7 +286,7 @@ class TwiMLServiceTest extends TestCase
         );
     }
 
-    #[TestWith([TwiMLService::DIGIT_GO_TO_PREVIOUS_MENU])]
+    #[TestWith([TwiMLService::DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS])]
     public function testCanHandleChooseProvidePolicyNumberMenuCorrectly(string $digit): void
     {
         $response = new TwiMLService(new VoiceResponse())

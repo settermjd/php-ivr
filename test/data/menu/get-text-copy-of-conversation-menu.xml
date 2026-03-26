@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/get-text-copy-of-conversation/respond" method="GET">
+    <Gather action="/menu/step/get-text-copy-of-conversation/respond" method="POST">
         <Say>To get a text copy of this conversation, press 1.
 To go back to the previous menu, press 9.</Say>
     </Gather>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/choose-new-or-existing-policy/respond" method="GET">
+    <Gather action="/menu/step/choose-new-or-existing-policy/respond" method="POST">
         <Say>For a new policy, press 1.
 For an existing policy, press 2.
 To hear those options again, press star.

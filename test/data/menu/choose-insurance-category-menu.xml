@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather action="/menu/step/choose-insurance-category/respond" method="GET">
+    <Gather action="/menu/step/choose-insurance-category/respond" method="POST">
         <Say>For personal insurance, press 1.
 For commercial insurance, press 2.
 To hear those options again, press star.

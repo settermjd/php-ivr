@@ -163,7 +163,7 @@ class TwiMLService
         $gather = $this->response->gather(
             [
                 'action' => sprintf('%s/%s/respond', self::BASE_ACTION, $menu),
-                'method' => 'GET',
+                'method' => 'POST',
             ],
         );
         $gather->say($this->getSayMenuContent($menu));

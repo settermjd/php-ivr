@@ -15,14 +15,14 @@ final class ChooseLanguageMenuCest
 {
     public const string MENU_GET_TEXT_COPY_OF_CONVERSATION = <<<EOF
         <?xml version="1.0" encoding="UTF-8"?>
-        <Response><Gather action="/menu/step/get-text-copy-of-conversation/respond" method="GET"><Say>To get a text copy of this conversation, press 1.
+        <Response><Gather action="/menu/step/get-text-copy-of-conversation/respond" method="POST"><Say>To get a text copy of this conversation, press 1.
         To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
         EOF;
 
     public const string MENU_CHOOSE_DEPARTMENT = <<<EOF
         <?xml version="1.0" encoding="UTF-8"?>
-        <Response><Gather action="/menu/step/choose-department/respond" method="GET"><Say>For insurance, press 1.
+        <Response><Gather action="/menu/step/choose-department/respond" method="POST"><Say>For insurance, press 1.
         For banking, press 2.
         To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
 
@@ -31,7 +31,7 @@ final class ChooseLanguageMenuCest
 
     public const string MENU_CHOOSE_INSURANCE_CATEGORY = <<<EOF
         <?xml version="1.0" encoding="UTF-8"?>
-        <Response><Gather action="/menu/step/choose-insurance-category/respond" method="GET"><Say>For personal insurance, press 1.
+        <Response><Gather action="/menu/step/choose-insurance-category/respond" method="POST"><Say>For personal insurance, press 1.
         For commercial insurance, press 2.
         To hear those options again, press *.
         To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
@@ -40,7 +40,7 @@ final class ChooseLanguageMenuCest
 
     public const string MENU_CHOOSE_INSURANCE_TYPE = <<<EOF
         <?xml version="1.0" encoding="UTF-8"?>
-        <Response><Gather action="/menu/step/choose-insurance-type/respond" method="GET"><Say>For home and contents insurance, press 1.
+        <Response><Gather action="/menu/step/choose-insurance-type/respond" method="POST"><Say>For home and contents insurance, press 1.
         For car insurance, press 2.
         To hear those options again, press *.
         To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
@@ -49,7 +49,7 @@ final class ChooseLanguageMenuCest
 
     public const string MENU_CHOOSE_NEW_OR_EXISTING_POLICY = <<<EOF
         <?xml version="1.0" encoding="UTF-8"?>
-        <Response><Gather action="/menu/step/choose-new-or-existing-policy/respond" method="GET"><Say>For a new policy, press 1.
+        <Response><Gather action="/menu/step/choose-new-or-existing-policy/respond" method="POST"><Say>For a new policy, press 1.
         For an existing policy, press 2.
         To hear those options again, press *.
         To go back to the previous menu, press 9.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>
@@ -95,7 +95,7 @@ final class ChooseLanguageMenuCest
 
         $expectedResult = <<<EOF
             <?xml version="1.0" encoding="UTF-8"?>
-            <Response><Gather action="/menu/step/choose-language/respond" method="GET"><Say>Thank you for calling Happy Community Bank and Insurance Company.
+            <Response><Gather action="/menu/step/choose-language/respond" method="POST"><Say>Thank you for calling Happy Community Bank and Insurance Company.
             To hear the options in English, press 1.
             To hear the options in Spanish, press 2.
             To hear those options again, press *.</Say></Gather><Say>We didn't receive any input. Goodbye.</Say></Response>

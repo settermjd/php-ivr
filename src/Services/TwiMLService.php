@@ -17,12 +17,12 @@ use function trim;
  */
 class TwiMLService
 {
-    public const string BASE_ACTION                  = "/menu/step";
-    public const string DIGIT_GO_TO_PREVIOUS_MENU    = '9';
+    public const string BASE_ACTION                              = "/menu/step";
+    public const string DIGIT_GO_TO_PREVIOUS_MENU                = '9';
     public const string DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS = '*';
-    public const string INVALID_MENU_RESPONSE        = "That is not a valid menu. Goodbye.";
-    public const string THANK_YOU_GOODBYE_RESPONSE   = "Thank you. Goodbye.";
-    public const string NO_INPUT_RESPONSE            = "We didn't receive any input. Goodbye.";
+    public const string INVALID_MENU_RESPONSE                    = "That is not a valid menu. Goodbye.";
+    public const string THANK_YOU_GOODBYE_RESPONSE               = "Thank you. Goodbye.";
+    public const string NO_INPUT_RESPONSE                        = "We didn't receive any input. Goodbye.";
 
     /** @var array <string,array<string,string>> */
     private array $menuOptions = [
@@ -68,12 +68,12 @@ class TwiMLService
     {
     }
 
-    public function getPreviousMenu(string $menu): VoiceResponse
+    private function getPreviousMenu(string $menu): VoiceResponse
     {
         return $this->response;
     }
 
-    public function getRedirectToCustomerServiceRepMenu(): VoiceResponse
+    private function getRedirectToCustomerServiceRepMenu(): VoiceResponse
     {
         $this->response->say("Transferring you now. Goodbye.");
         return $this->response;
@@ -82,7 +82,7 @@ class TwiMLService
     /**
      * This function returns the contents for a TwiML Say verb from the filesystem
      */
-    public function getSayMenuContent(string $menu): string
+    private function getSayMenuContent(string $menu): string
     {
         return trim(
             file_get_contents(

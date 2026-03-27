@@ -8,6 +8,7 @@ use App\Application;
 use App\Services\TwiMLService;
 use ArrayObject;
 use DI\Container;
+use Monolog\Logger;
 use PhpDb\ResultSet\ResultSet;
 use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
@@ -22,6 +23,7 @@ use Slim\Views\Twig;
 use Twilio\TwiML\VoiceResponse;
 
 use function array_merge;
+use function sprintf;
 
 /**
  * This class encapsulates the central Slim application,
@@ -303,5 +305,38 @@ final class ApplicationTest extends TestCase
             ->willReturn($twig);
 
         $app->getAgentDashboard($request, $response, ['callSid' => $callSid]);
+    }
+
+    public function testThatTheApplicationLogsTheCallSIDWhenTheChooseLanguageMenuIsRequested(): void
+    {
+        $callSid = 'CAa0000000000000000000000000000000';
+
+        $slimApp = AppFactory::createFromContainer($this->createStub(Container::class));
+        $logger  = $this->createMock(Logger::class);
+        $logger
+            ->expects($this->once())
+            ->method('info')
+            ->with(sprintf("Call's SID is %s", $callSid));
+
+        $app = new Application(
+            $slimApp,
+            new TwiMLService(new VoiceResponse()),
+            $this->createStub(TableGatewayInterface::class),
+            $logger,
+        );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request
+            ->expects($this->once())
+            ->method('getParsedBody')
+            ->willReturn(
+                [
+                    'CallSid' => $callSid,
+                    'From'    => '+16175551212',
+                ]
+            );
+        $response = $this->createStub(ResponseInterface::class);
+
+        $app->getMenu($request, $response, ['step' => 'choose-language']);
     }
 }

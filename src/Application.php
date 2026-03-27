@@ -12,6 +12,7 @@ use PhpDb\TableGateway\Exception\RuntimeException;
 use PhpDb\TableGateway\TableGatewayInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Slim\App as SlimApp;
 use Slim\Interfaces\RouteInterface;
 use Slim\Middleware\ContentLengthMiddleware;
@@ -25,12 +26,13 @@ use function sprintf;
  * This class encapsulates the central Slim application,
  * making it easier to create and test.
  */
-final class Application
+final readonly class Application
 {
     public function __construct(
-        private readonly SlimApp $app,
-        private readonly TwiMLService $twimlService,
-        private readonly TableGatewayInterface $table,
+        private SlimApp $app,
+        private TwiMLService $twimlService,
+        private TableGatewayInterface $table,
+        private ?LoggerInterface $logger = null,
     ) {
         $app->add(new ContentLengthMiddleware());
         $app->addBodyParsingMiddleware();
@@ -80,7 +82,12 @@ final class Application
         ResponseInterface $response,
         array $args,
     ): ResponseInterface {
-        $menu = $this->twimlService->getMenu($args['step']);
+        $step = $args['step'];
+        if ($step === "choose-language") {
+            $this->logger?->info(sprintf("Call's SID is %s", $request->getParsedBody()['CallSid']));
+        }
+
+        $menu = $this->twimlService->getMenu($step);
         $response->getBody()->write($menu->asXML());
         return $response;
     }

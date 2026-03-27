@@ -9,6 +9,9 @@ use Dotenv\Dotenv;
 use Laminas\ConfigAggregator\ConfigAggregator;
 use Laminas\ConfigAggregator\PhpFileProvider;
 use Laminas\ServiceManager\ServiceManager;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
 use PhpDb\Adapter\Sqlite\ConfigProvider;
 use PhpDb\Adapter\Sqlite\Container\AdapterFactory;
 use PhpDb\TableGateway\TableGateway;
@@ -77,6 +80,9 @@ $application = new Application(
     $app,
     new TwiMLService(new VoiceResponse()),
     new TableGateway('ivr_input', new AdapterFactory()->__invoke($diContainer)),
+    new Logger('ivr_log')->pushHandler(
+        new StreamHandler(__DIR__ . '/../data/log/ivr.log', Level::Info)
+    )
 );
 $application->setupRoutes();
 $application->run();

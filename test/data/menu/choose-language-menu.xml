@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Gather action="/menu/step/choose-language/respond" method="POST">
-        <Say>Thank you for calling Happy Community Bank and Insurance Company.
+        <Say language="%1$s">Thank you for calling Happy Community Bank and Insurance Company.
 To hear the options in English, press 1.
 To hear the options in Spanish, press 2.
 To hear those options again, press star.</Say>
     </Gather>
-    <Say>We didn't receive any input. Goodbye.</Say>
+    <Say language="%1$s">We didn't receive any input. Goodbye.</Say>
 </Response>

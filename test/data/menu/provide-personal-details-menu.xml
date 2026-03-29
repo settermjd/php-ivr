@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Please provide your first and last names at the tone.
+    <Say language="%1$s">Please provide your first and last names at the tone.
 Press the star key when finished.</Say>
     <Record action="/menu/step/provide-personal-details/respond" 
         method="post"
@@ -8,5 +8,5 @@ Press the star key when finished.</Say>
         timeout="10" 
         transcribe="true"
         transcribeCallback="/menu/step/provide-personal-details/record" />
-    <Say>We didn't receive any input. Goodbye.</Say>
+    <Say language="%1$s">We didn't receive any input. Goodbye.</Say>
 </Response>

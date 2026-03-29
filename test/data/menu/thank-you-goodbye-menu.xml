@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Thank you. Goodbye.</Say>
+    <Say language="%1$s">Thank you. Goodbye.</Say>
 </Response>
 

@@ -18,6 +18,7 @@ use function trim;
 class TwiMLService
 {
     public const string BASE_ACTION                              = "/menu/step";
+    public const string DEFAULT_LANGUAGE                         = 'en-AU';
     public const string DIGIT_GO_TO_PREVIOUS_MENU                = '9';
     public const string DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS = '*';
     public const string INVALID_MENU_RESPONSE                    = "That is not a valid menu. Goodbye.";
@@ -64,9 +65,7 @@ class TwiMLService
         ],
     ];
 
-    public function __construct(private VoiceResponse $response)
-    {
-    }
+    public function __construct(private VoiceResponse $response, private string $menuLanguage = self::DEFAULT_LANGUAGE) {}
 
     private function getPreviousMenu(string $menu): VoiceResponse
     {
@@ -75,7 +74,10 @@ class TwiMLService
 
     private function getRedirectToCustomerServiceRepMenu(): VoiceResponse
     {
-        $this->response->say("Transferring you now. Goodbye.");
+        $this->response->say(
+            "Transferring you now. Goodbye.",
+            ['language' => $this->menuLanguage]
+        );
         return $this->response;
     }
 
@@ -108,18 +110,27 @@ class TwiMLService
     public function getMenu(string $menu): VoiceResponse
     {
         if ($menu === "thank-you-goodbye") {
-            $this->response->say(trim(self::THANK_YOU_GOODBYE_RESPONSE));
+            $this->response->say(
+                trim(self::THANK_YOU_GOODBYE_RESPONSE),
+                ['language' => $this->menuLanguage]
+            );
             return $this->response;
         }
 
         if (! in_array($menu, array_keys($this->menuOptions))) {
-            $this->response->say(trim(self::INVALID_MENU_RESPONSE));
+            $this->response->say(
+                trim(self::INVALID_MENU_RESPONSE),
+                ['language' => $this->menuLanguage]
+            );
             return $this->response;
         }
 
         return match ($menu) {
             "pre-transfer-confirmation" => (function () use ($menu) {
-                $this->response->say($this->getSayMenuContent($menu));
+                $this->response->say(
+                    $this->getSayMenuContent($menu),
+                    ['language' => $this->menuLanguage]
+                );
                 return $this->response;
             })(),
             "choose-language",
@@ -129,12 +140,18 @@ class TwiMLService
             "choose-insurance-type",
             "choose-new-or-existing-policy" => (function () use ($menu) {
                 $this->addGatherVerb($menu);
-                $this->response->say(self::NO_INPUT_RESPONSE);
+                $this->response->say(
+                    self::NO_INPUT_RESPONSE,
+                    ['language' => $this->menuLanguage]
+                );
                 return $this->response;
             })(),
             "provide-personal-details",
             "provide-policy-number" => (function () use ($menu) {
-                $this->response->say($this->getSayMenuContent($menu));
+                $this->response->say(
+                    $this->getSayMenuContent($menu),
+                    ['language' => $this->menuLanguage]
+                );
                 $this->response->record(
                     [
                         'action'             => sprintf('%s/%s/respond', self::BASE_ACTION, $menu),
@@ -145,7 +162,10 @@ class TwiMLService
                         'transcribeCallback' => sprintf('%s/%s/record', self::BASE_ACTION, $menu),
                     ],
                 );
-                $this->response->say(self::NO_INPUT_RESPONSE);
+                $this->response->say(
+                    self::NO_INPUT_RESPONSE,
+                    ['language' => $this->menuLanguage]
+                );
 
                 return $this->response;
             })(),
@@ -166,7 +186,10 @@ class TwiMLService
                 'method' => 'POST',
             ],
         );
-        $gather->say($this->getSayMenuContent($menu));
+        $gather->say(
+            $this->getSayMenuContent($menu),
+            ['language' => $this->menuLanguage],
+        );
     }
 
     /**

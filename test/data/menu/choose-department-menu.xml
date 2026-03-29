@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Gather action="/menu/step/choose-department/respond" method="POST">
-        <Say>For insurance, press 1.
+        <Say language="%1$s">For insurance, press 1.
 For banking, press 2.
 To talk to a customer representative, press 8.
 To hear those options again, press star.
 To go back to the previous menu, press 9.</Say>
     </Gather>
-    <Say>We didn't receive any input. Goodbye.</Say>
+    <Say language="%1$s">We didn't receive any input. Goodbye.</Say>
 </Response>

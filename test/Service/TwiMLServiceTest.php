@@ -14,8 +14,13 @@ use function sprintf;
 
 class TwiMLServiceTest extends TestCase
 {
+    public const string DEFAULT_LANGUAGE = 'en-AU';
+
     private TwiMLService $twimlService;
 
+    /**
+     * This test verifies that TwiMLService both generates the correct menu and sets the language attribute correctly
+     */
     #[TestWith(['choose-department'])]
     #[TestWith(['choose-insurance-category'])]
     #[TestWith(['choose-insurance-type'])]
@@ -25,14 +30,23 @@ class TwiMLServiceTest extends TestCase
     #[TestWith(['pre-transfer-confirmation'])]
     #[TestWith(['provide-personal-details'])]
     #[TestWith(['provide-policy-number'])]
-    public function testCanGenerateMenuCorrectly(string $menu): void
+    #[TestWith(['choose-department', 'es-ES'])]
+    #[TestWith(['choose-insurance-category', 'es-ES'])]
+    #[TestWith(['choose-insurance-type', 'de-DE'])]
+    #[TestWith(['choose-language', 'de-AT'])]
+    #[TestWith(['choose-new-or-existing-policy', 'en-IN'])]
+    #[TestWith(['get-text-copy-of-conversation', 'ko-KR'])]
+    #[TestWith(['pre-transfer-confirmation', 'fr-CA'])]
+    #[TestWith(['provide-personal-details', 'pt-BR'])]
+    #[TestWith(['provide-policy-number', 'zh-HK'])]
+    public function testCanGenerateMenuCorrectly(string $menu, string $menuLanguage = self::DEFAULT_LANGUAGE): void
     {
-        $this->twimlService = new TwiMLService(new VoiceResponse());
+        $this->twimlService = new TwiMLService(new VoiceResponse(), $menuLanguage);
 
         $this->assertXmlStringEqualsXmlString(
-            $this->getExpectedMenu($menu),
+            $this->getExpectedMenu($menu, $menuLanguage),
             $this->twimlService
-                ->getMenu($menu)
+                ->getMenu($menu, $menuLanguage)
                 ->asXML(),
         );
     }
@@ -317,10 +331,14 @@ class TwiMLServiceTest extends TestCase
         );
     }
 
-    private function getExpectedMenu(string $menu): string
+    /**
+     * Return the expected TwiML for the requested menu with the expected language attribute
+     */
+    private function getExpectedMenu(string $menu, string $languageAttribute = self::DEFAULT_LANGUAGE): string
     {
-        return file_get_contents(
+        $baseTwiML = file_get_contents(
             sprintf("%s/../data/menu/%s-menu.xml", __DIR__, $menu),
         );
+        return sprintf($baseTwiML, $languageAttribute);
     }
 }

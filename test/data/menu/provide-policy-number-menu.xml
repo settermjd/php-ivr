@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Please provide the policy number at the tone, starting with "MPW".
+    <Say language="%1$s">Please provide the policy number at the tone, starting with "MPW".
 Press the star key when finished.</Say>
     <Record action="/menu/step/provide-policy-number/respond" 
         method="post"
@@ -8,5 +8,5 @@ Press the star key when finished.</Say>
         timeout="10" 
         transcribe="true"
         transcribeCallback="/menu/step/provide-policy-number/record" />
-    <Say>We didn't receive any input. Goodbye.</Say>
+    <Say language="%1$s">We didn't receive any input. Goodbye.</Say>
 </Response>

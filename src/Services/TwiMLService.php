@@ -22,8 +22,8 @@ class TwiMLService
     public const string DIGIT_GO_TO_PREVIOUS_MENU                = '9';
     public const string DIGIT_REPEAT_CURRENT_OR_CONTINUE_OPTIONS = '*';
     public const string INVALID_MENU_RESPONSE                    = "That is not a valid menu. Goodbye.";
-    public const string THANK_YOU_GOODBYE_RESPONSE               = "Thank you. Goodbye.";
     public const string NO_INPUT_RESPONSE                        = "We didn't receive any input. Goodbye.";
+    public const string THANK_YOU_GOODBYE_RESPONSE               = "Thank you. Goodbye.";
 
     /** @var array <string,array<string,string>> */
     private array $menuOptions = [

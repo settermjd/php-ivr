@@ -108,9 +108,12 @@ final readonly class Application
     }
 
     /**
-     * This function determines the menu to return
+     * This function takes action based on the provided IVR step
      *
-     * It does this by looking at the requested menu and any digit pressed.
+     * It does this by looking at the requested step and any feedback provided by the caller.
+     * The two things that it usually does is determine the next TwiML to return to Twilio,
+     * so that Twilio can generate the correct IVR menu, and persist caller feedback for the
+     * previous menu.
      *
      * @param array<string,string> $args
      */

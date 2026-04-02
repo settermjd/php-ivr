@@ -65,7 +65,10 @@ class TwiMLService
         ],
     ];
 
-    public function __construct(private VoiceResponse $response, private string $menuLanguage = self::DEFAULT_LANGUAGE) {}
+    public function __construct(
+        private VoiceResponse $response,
+        private string $menuLanguage = self::DEFAULT_LANGUAGE
+    ) {}
 
     private function getPreviousMenu(string $menu): VoiceResponse
     {

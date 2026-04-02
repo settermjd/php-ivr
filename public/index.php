@@ -19,6 +19,8 @@ use Slim\Factory\AppFactory;
 use Twilio\Rest\Client;
 use Twilio\TwiML\VoiceResponse;
 
+use function getenv;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 /**
@@ -82,7 +84,8 @@ $application = new Application(
     new TableGateway('ivr_input', new AdapterFactory()->__invoke($diContainer)),
     new Logger('ivr_log')->pushHandler(
         new StreamHandler(__DIR__ . '/../data/log/ivr.log', Level::Info)
-    )
+    ),
+    new Client(getenv("TWILIO_ACCOUNT_SID"), getenv("TWILIO_AUTH_TOKEN")),
 );
 $application->setupRoutes();
 $application->run();

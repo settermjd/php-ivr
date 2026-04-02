@@ -18,9 +18,12 @@ use Slim\Interfaces\RouteInterface;
 use Slim\Middleware\ContentLengthMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use Twilio\Rest\Client;
 
 use function array_merge;
+use function getenv;
 use function sprintf;
+use function str_replace;
 
 /**
  * This class encapsulates the central Slim application,
@@ -33,6 +36,7 @@ final readonly class Application
         private TwiMLService $twimlService,
         private TableGatewayInterface $table,
         private ?LoggerInterface $logger = null,
+        private ?Client $client = null,
     ) {
         $app->add(new ContentLengthMiddleware());
         $app->addBodyParsingMiddleware();
@@ -52,6 +56,7 @@ final readonly class Application
         $this->app->post('/menu/step/{step}/respond', [$this, 'processCallerInput']);
         $this->app->post('/menu/step/{step}/record', [$this, 'processCallerVoiceResponse']);
         $this->app->get('/caller-input/{callSid}', [$this, 'getAgentDashboard']);
+        $this->app->get('/conversations/{callSid}', [$this, 'getTextCopyOfConversation']);
     }
 
     /**
@@ -82,13 +87,88 @@ final readonly class Application
         ResponseInterface $response,
         array $args,
     ): ResponseInterface {
-        $step = $args['step'];
+        $step        = $args['step'];
+        $requestBody = $request->getParsedBody();
+
         if ($step === "choose-language") {
-            $this->logger?->info(sprintf("Call's SID is %s", $request->getParsedBody()['CallSid']));
+            $this->logger?->info(sprintf("Call's SID is %s", $requestBody['CallSid']));
+        }
+
+        if ($step === "pre-transfer-confirmation") {
+            $record = $this->table
+                ->select(
+                    [
+                        'call_sid' => $requestBody['CallSid'],
+                    ]
+                )
+                ->current();
+            if ($record->offsetGet('text_copy_of_conversation') === 1) {
+                $this->client->messages->create(
+                    $record->offsetGet('caller_phone_number'), // To
+                    [
+                        "body"     => "Here is a copy of your recent conversation with Happy Community Bank and Insurance Company",
+                        "from"     => getenv("TWILIO_PHONE_NUMBER"),
+                        "mediaUrl" => [
+                            sprintf(
+                                "%s/conversations/%s",
+                                getenv("NGROK_FORWARDING_URL"),
+                                $requestBody['CallSid']
+                            ),
+                        ],
+                    ]
+                );
+            }
         }
 
         $menu = $this->twimlService->getMenu($step);
         $response->getBody()->write($menu->asXML());
+        return $response;
+    }
+
+    public function getTextCopyOfConversation(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args,
+    ): ResponseInterface {
+        $requestBody = $request->getParsedBody();
+
+        /** @var ArrayObject $record */
+        $record = $this->table
+            ->select(
+                [
+                    'call_sid' => $requestBody['CallSid'],
+                ]
+            )
+            ->current();
+
+        $textBody = <<<EOF
+            Call SID: %s
+            Language: %s
+            Department: %s
+            Insurance Category: %s
+            Insurance Type: %s
+            New or existing policy: %s
+            Personal details: %s
+            Policy number: %s
+            EOF;
+
+        $response->getBody()
+            ->write(
+                sprintf(
+                    $textBody,
+                    $record->offsetGet('call_sid'),
+                    $record->offsetGet('language'),
+                    $record->offsetGet('department'),
+                    $record->offsetGet('insurance_category'),
+                    str_replace('-', ' ', $record->offsetGet('insurance_type')),
+                    $record->offsetGet('new_or_existing_policy'),
+                    $record->offsetGet('personal_details'),
+                    $record->offsetGet('policy_number'),
+                )
+            );
+
+        $response->withHeader('Content-Type', 'text/plain');
+
         return $response;
     }
 
@@ -191,7 +271,7 @@ final readonly class Application
         ];
         try {
             $this->table->insert(array_merge($callerData, $callDetails));
-        } catch (RuntimeException | InvalidQueryException $e) {
+        } catch (RuntimeException|InvalidQueryException $e) {
             $this->table->update($callerData, $callDetails);
         }
     }

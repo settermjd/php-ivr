@@ -17,12 +17,16 @@ use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
+use Twilio\Rest\Api\V2010\Account\MessageList;
+use Twilio\Rest\Client;
 use Twilio\TwiML\VoiceResponse;
 
 use function array_merge;
+use function putenv;
 use function sprintf;
 
 /**
@@ -338,5 +342,211 @@ final class ApplicationTest extends TestCase
         $response = $this->createStub(ResponseInterface::class);
 
         $app->getMenu($request, $response, ['step' => 'choose-language']);
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testThatTheApplicationSendsTheTextCopyOfTheConversationAtTheEndOfTheCall(bool $callerWantsTextCopyOfConversation): void
+    {
+        $callSid = 'CAa0000000000000000000000000000000';
+        $from    = '+16175551212';
+
+        $result = $this->createMock(ResultSet::class);
+        $result
+            ->expects($this->once())
+            ->method('current')
+            ->willReturn(
+                new ArrayObject(
+                    [
+                        'call_sid'                  => $callSid,
+                        'caller_phone_number'       => $from,
+                        'text_copy_of_conversation' => 1,
+                    ]
+                )
+            );
+
+        $table = $this->createMock(TableGatewayInterface::class);
+        $table
+            ->expects($this->once())
+            ->method('select')
+            ->with(
+                [
+                    'call_sid' => $callSid,
+                ]
+            )
+            ->willReturn($result);
+
+        $twilioPhoneNumber  = "+61123456789";
+        $ngrokForwardingUrl = "https://1eb2-181-80-12-3.ngrok-free.app";
+        putenv("TWILIO_PHONE_NUMBER=$twilioPhoneNumber");
+        putenv("NGROK_FORWARDING_URL=$ngrokForwardingUrl");
+
+        $twilioMessagesClient = $this->createMock(MessageList::class);
+        $twilioMessagesClient
+            ->expects($this->once())
+            ->method('create')
+            ->with(
+                $from,
+                [
+                    'body'     => 'Here is a copy of your recent conversation with Happy Community Bank and Insurance Company',
+                    'from'     => $twilioPhoneNumber,
+                    "mediaUrl" => [
+                        sprintf("%s/conversations/%s", $ngrokForwardingUrl, $callSid),
+                    ],
+                ]
+            );
+
+        $twilioClient = $this->createMock(Client::class);
+        $twilioClient
+            ->expects($this->once())
+            ->method('__get')
+            ->with('messages')
+            ->willReturn($twilioMessagesClient);
+
+        $slimApp = AppFactory::createFromContainer($this->createStub(Container::class));
+        $app     = new Application(
+            $slimApp,
+            new TwiMLService(new VoiceResponse()),
+            $table,
+            $this->createStub(Logger::class),
+            $twilioClient,
+        );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request
+            ->expects($this->once())
+            ->method('getParsedBody')
+            ->willReturn(
+                [
+                    'CallSid' => $callSid,
+                    'From'    => $from,
+                ]
+            );
+        $response = $this->createStub(ResponseInterface::class);
+
+        $app->getMenu($request, $response, ['step' => 'pre-transfer-confirmation']);
+    }
+
+    /**
+     * @param array<int,string> $databaseRecord
+     * @param array<int,string> $expectedTextBody
+     */
+    #[TestWith([
+        'CAa0000000000000000000000000000000',
+        [
+            'call_sid'               => 'CAa0000000000000000000000000000000',
+            'language'               => 'english',
+            'department'             => 'insurance',
+            'insurance_category'     => 'personal',
+            'insurance_type'         => 'home-and-contents',
+            'new_or_existing_policy' => 'new',
+            'personal_details'       => 'James. T. Kirk',
+            'policy_number'          => 'MPW123456789',
+        ],
+        [
+            'call_sid'               => 'CAa0000000000000000000000000000000',
+            'language'               => 'english',
+            'department'             => 'insurance',
+            'insurance_category'     => 'personal',
+            'insurance_type'         => 'home and contents',
+            'new_or_existing_policy' => 'new',
+            'personal_details'       => 'James. T. Kirk',
+            'policy_number'          => 'MPW123456789',
+        ],
+    ])]
+    public function testCallingTheTextCopyOfConversationRouteReturnsTextCopyOfConversation(
+        string $callSid,
+        array $databaseRecord,
+        array $expectedTextBody,
+    ): void {
+        $result = $this->createMock(ResultSet::class);
+        $result
+            ->expects($this->once())
+            ->method('current')
+            ->willReturn(
+                new ArrayObject(
+                    array_merge(
+                        [$callSid],
+                        $databaseRecord
+                    )
+                )
+            );
+
+        $table = $this->createMock(TableGatewayInterface::class);
+        $table
+            ->expects($this->once())
+            ->method('select')
+            ->with(
+                [
+                    'call_sid' => $callSid,
+                ]
+            )
+            ->willReturn($result);
+
+        $slimApp = AppFactory::createFromContainer($this->createStub(Container::class));
+        $app     = new Application(
+            $slimApp,
+            new TwiMLService(new VoiceResponse()),
+            $table,
+            $this->createStub(Logger::class),
+            $this->createStub(Client::class),
+        );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request
+            ->expects($this->once())
+            ->method('getParsedBody')
+            ->willReturn(
+                [
+                    'CallSid' => $callSid,
+                    $databaseRecord['language'],
+                    $databaseRecord['department'],
+                    $databaseRecord['insurance_category'],
+                    $databaseRecord['insurance_type'],
+                    $databaseRecord['new_or_existing_policy'],
+                    $databaseRecord['personal_details'],
+                    $databaseRecord['policy_number'],
+                ]
+            );
+
+        $textBody = <<<EOF
+            Call SID: %s
+            Language: %s
+            Department: %s
+            Insurance Category: %s
+            Insurance Type: %s
+            New or existing policy: %s
+            Personal details: %s
+            Policy number: %s
+            EOF;
+
+        $body = $this->createMock(StreamInterface::class);
+        $body
+            ->expects($this->once())
+            ->method('write')
+            ->with(
+                sprintf(
+                    $textBody,
+                    $callSid,
+                    $expectedTextBody['language'],
+                    $expectedTextBody['department'],
+                    $expectedTextBody['insurance_category'],
+                    $expectedTextBody['insurance_type'],
+                    $expectedTextBody['new_or_existing_policy'],
+                    $expectedTextBody['personal_details'],
+                    $expectedTextBody['policy_number'],
+                )
+            );
+        $response = $this->createMock(ResponseInterface::class);
+        $response
+            ->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response
+            ->expects($this->once())
+            ->method('withHeader')
+            ->with('Content-Type', 'text/plain');
+
+        $app->getTextCopyOfConversation($request, $response, []);
     }
 }
